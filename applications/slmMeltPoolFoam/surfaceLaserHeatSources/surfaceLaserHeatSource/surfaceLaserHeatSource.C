@@ -25,45 +25,72 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "coordinateBased.H"
+#include "surfaceLaserHeatSource.H"
 
-#include "addToRunTimeSelectionTable.H"
-
-#include "interfacialLaserHeatSource.H"
+#include "error.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    namespace absorptivity
-    {
-        defineTypeName(coordinateBased);
-        addToRunTimeSelectionTable(absorptivityModel, coordinateBased, dictionary);
-    }
+    defineTypeName(surfaceLaserHeatSource);
+    defineRunTimeSelectionTable(surfaceLaserHeatSource, mixtureAdvector);
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::absorptivity::coordinateBased::coordinateBased(const dictionary& dict)
-:
-    absorptivityModel(dict),
-    beamDirection_(dict.get<vector>("beamDirection"))
-{}
-
-
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-Foam::tmp<Foam::volScalarField> Foam::absorptivity::coordinateBased::value
+Foam::autoPtr<Foam::surfaceLaserHeatSource> Foam::surfaceLaserHeatSource::New
 (
-    const volScalarField& alphaM,
-    const volVectorField& gradAlphaM,
-    const interfacialLaserHeatSource& laser
-) const
+    const incompressibleGasMetalMixture& mixture,
+    const isoAdvection& advector
+)
 {
-    const fvMesh& mesh = alphaM.mesh();
-    return max(dimensionedScalar(gradAlphaM.dimensions()), gradAlphaM & beamDirection_)
-        *(1 - (1 - A_)*exp(min(Zero, -(mesh.C() & beamDirection_)/2/laser.radius())));
+    const IOdictionary dict
+    (
+        IOobject
+        (
+            "laserProperties",
+            mixture.U().time().constant(),
+            mixture.U().db(),
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE,
+            false // Do not register
+        )
+    );
+
+    const word modelType(dict.subDict("source").get<word>("type"));
+
+    Info<< "Selecting surface laser heat source model " << modelType << endl;
+
+    const auto cstrIter = mixtureAdvectorConstructorTablePtr_->cfind(modelType);
+
+    if (!cstrIter.found())
+    {
+        FatalIOErrorInLookup
+        (
+            dict,
+            "surfaceLaserHeatSource",
+            modelType,
+            *mixtureAdvectorConstructorTablePtr_
+        ) << exit(FatalIOError);
+    }
+
+    return autoPtr<surfaceLaserHeatSource>(cstrIter()(mixture, advector));
 }
+
+
+Foam::surfaceLaserHeatSource::surfaceLaserHeatSource
+(
+    const word& modelType,
+    const incompressibleGasMetalMixture& mixture,
+    const isoAdvection& advector
+)
+:
+    laserHeatSource(advector.alpha().mesh()),
+    modelDict_(subDict("source").subDict(modelType + "Model")),
+    mixture_(mixture),
+    advector_(advector)
+{}
 
 
 // ************************************************************************* //

@@ -24,78 +24,68 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::absorptivityModel
+    Foam::reflection::noReflection
 
 Description
-    Abstract base class for absorptivity model for interfacial heat source.
+    Dummy reflection model for 'none'
+
+SourceFiles
+    noReflection.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef absorptivityModel_H
-#define absorptivityModel_H
+#ifndef reflection_noReflection_H
+#define reflection_noReflection_H
 
-#include "volFields.H"
-#include "runTimeSelectionTables.H"
+#include "reflectionModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-
-class interfacialLaserHeatSource;
-
-/*---------------------------------------------------------------------------*\
-                        Class absorptivityModel Declaration
-\*---------------------------------------------------------------------------*/
-
-class absorptivityModel
+namespace reflection
 {
 
-protected:
+/*---------------------------------------------------------------------------*\
+                         Class noReflection Declaration
+\*---------------------------------------------------------------------------*/
 
-    // Protected data
-
-        //- Absorptivity coefficient []
-        const dimensionedScalar A_;
+class noReflection
+:
+    public reflectionModel
+{
 
 public:
 
     //- Runtime type information
-    TypeName("absorptivityModel");
-
-    //- Declare run-time constructor selection tables
-    declareRunTimeSelectionTable
-    (
-        autoPtr,
-        absorptivityModel,
-        dictionary,
-        (const dictionary& dict),
-        (dict)
-    );
+    TypeName("none");
 
     //- Constructor
-    absorptivityModel(const dictionary& dict);
-
-    //- Selector
-    static autoPtr<absorptivityModel> New(const dictionary& dict);
+    noReflection(const dictionary& dict) : reflectionModel(dict) {}
 
     //- Destructor
-    virtual ~absorptivityModel() = default;
+    ~noReflection() final = default;
+
 
     // Member Functions
 
-        //- Return the absorptivity field
-        virtual tmp<volScalarField> value
-        (
-            const volScalarField& alphaM,
-            const volVectorField& gradAlphaM,
-            const interfacialLaserHeatSource& laser
-        ) const = 0;
+        //- Return reflectivity
+        scalar rho(const scalar incidentAngle) const final
+        {
+            return 0;
+        }
+
+        //- Return reflected direction
+        vector R(const vector& incident, const vector& n) const final
+        {
+            return vector::zero;
+        }
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace reflection
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

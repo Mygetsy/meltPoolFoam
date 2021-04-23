@@ -5,10 +5,10 @@
     \\  /    A nd           | Copyright held by original author(s)
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
-                            | Copyright (C) 2020-2021 Oleg Rogozin
+                            | Copyright (C) 2021 Oleg Rogozin
 -------------------------------------------------------------------------------
 License
-    This file is part of gasMetalThermalProperties.
+    This file is part of slmMeltPoolFoam.
 
     OpenFOAM is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
@@ -25,19 +25,19 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "gasMetalThermalProperties.H"
+#include "noReflection.H"
 
-#include "incompressibleTwoPhaseMixture.H"
+#include "addToRunTimeSelectionTable.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    defineTemplateTypeNameAndDebug
-    (
-        gasMetalThermalProperties<incompressibleTwoPhaseMixture>,
-        0
-    );
+    namespace reflection
+    {
+        defineTypeName(noReflection);
+        addToRunTimeSelectionTable(reflectionModel, noReflection, dictionary);
+    }
 }
 
 // ************************************************************************* //

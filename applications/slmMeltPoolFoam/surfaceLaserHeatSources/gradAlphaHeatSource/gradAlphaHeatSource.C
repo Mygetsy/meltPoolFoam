@@ -5,10 +5,10 @@
     \\  /    A nd           | Copyright held by original author(s)
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
-                            | Copyright (C) 2020-2021 Oleg Rogozin
+                            | Copyright (C) 2021 Oleg Rogozin
 -------------------------------------------------------------------------------
 License
-    This file is part of gasMetalThermalProperties.
+    This file is part of slmMeltPoolFoam.
 
     OpenFOAM is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
@@ -25,19 +25,40 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "gasMetalThermalProperties.H"
+#include "gradAlphaHeatSource.H"
 
-#include "incompressibleTwoPhaseMixture.H"
+#include "addToRunTimeSelectionTable.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    defineTemplateTypeNameAndDebug
-    (
-        gasMetalThermalProperties<incompressibleTwoPhaseMixture>,
-        0
-    );
+    defineTypeName(gradAlphaHeatSource);
+    addToRunTimeSelectionTable(surfaceLaserHeatSource, gradAlphaHeatSource, mixtureAdvector);
 }
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+Foam::gradAlphaHeatSource::gradAlphaHeatSource
+(
+    const incompressibleGasMetalMixture& mixture,
+    const isoAdvection& advector
+)
+:
+    surfaceLaserHeatSource(typeName, mixture, advector),
+    absorptionModelPtr_(absorptionModel::New(modelDict_.subDict("absorption")))
+{}
+
+
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+
+void Foam::gradAlphaHeatSource::calcSource()
+{
+    const volScalarField& redistribution = mixture_.surfaceHeatSourceRedistribution();
+    const volVectorField& gradAlphaM = mixture_.gradAlphaM();
+
+    source_ = redistribution*beam().I()*absorptionModelPtr_->A(gradAlphaM, *this);
+}
+
 
 // ************************************************************************* //

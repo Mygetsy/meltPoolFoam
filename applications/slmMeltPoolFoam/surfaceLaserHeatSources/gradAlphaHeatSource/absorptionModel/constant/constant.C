@@ -25,50 +25,20 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "absorptivityModel.H"
+#include "constant.H"
 
-#include "error.H"
+#include "addToRunTimeSelectionTable.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    defineTypeName(absorptivityModel);
-    defineRunTimeSelectionTable(absorptivityModel, dictionary);
-}
-
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-Foam::autoPtr<Foam::absorptivityModel> Foam::absorptivityModel::New
-(
-    const dictionary& dict
-)
-{
-    const word modelType(dict.get<word>("type"));
-
-    Info<< "Selecting absorptivityModel " << modelType << endl;
-
-    const auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
-
-    if (!cstrIter.found())
+    namespace absorption
     {
-        FatalIOErrorInLookup
-        (
-            dict,
-            "absorptivityModel",
-            modelType,
-            *dictionaryConstructorTablePtr_
-        ) << exit(FatalIOError);
+        defineTypeName(constant);
+        addToRunTimeSelectionTable(absorptionModel, constant, dictionary);
     }
-
-    return autoPtr<absorptivityModel>(cstrIter()(dict));
 }
-
-
-Foam::absorptivityModel::absorptivityModel(const dictionary& dict)
-:
-    A_("value", dimless, dict)
-{}
 
 
 // ************************************************************************* //

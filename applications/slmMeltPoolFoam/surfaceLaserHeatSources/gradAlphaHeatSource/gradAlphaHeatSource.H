@@ -5,7 +5,7 @@
     \\  /    A nd           | Copyright held by original author(s)
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
-                            | Copyright (C) 2020-2021 Oleg Rogozin
+                            | Copyright (C) 2021 Oleg Rogozin
 -------------------------------------------------------------------------------
 License
     This file is part of slmMeltPoolFoam.
@@ -24,23 +24,21 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::incompressibleGasMetalMixture
+    Foam::gradAlphaHeatSource
 
 Description
-    Transport model for incompressible immiscible gas-metal mixture.
+    The surface laser heat source calculated from the metal fraction gradient.
 
 SourceFiles
-    incompressibleGasMetalMixture.C
+    gradAlphaHeatSource.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef incompressibleGasMetalMixture_H
-#define incompressibleGasMetalMixture_H
+#ifndef gradAlphaHeatSource_H
+#define gradAlphaHeatSource_H
 
-#include "immiscibleIncompressibleTwoPhaseMixture.H"
-#include "Function1.H"
-
-#include "gasMetalThermalProperties.H"
+#include "surfaceLaserHeatSource.H"
+#include "absorptionModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -48,67 +46,41 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                Class incompressibleGasMetalMixture Declaration
+                      Class gradAlphaHeatSource Declaration
 \*---------------------------------------------------------------------------*/
 
-class incompressibleGasMetalMixture
+class gradAlphaHeatSource
 :
-    public immiscibleIncompressibleTwoPhaseMixture,
-    public gasMetalThermalProperties<incompressibleGasMetalMixture>
+    public surfaceLaserHeatSource
 {
     // Private data
 
-        // Constants
+        //- Dictionary
+        const dictionary dict_;
 
-            //- Surface tension as a function of temperature
-            autoPtr<Function1<scalar>> pSigma_;
-
-            //- Derivative of the surface tension w.r.t temperature [kg/s^2/K]
-            const dimensionedScalar dSigmaDT_;
-
-            //- Coefficient related to the permeability of mushy layer [kg/m^3/s]
-            const dimensionedScalar mushyCoeff_;
+        //- The absorption model
+        autoPtr<absorptionModel> absorptionModelPtr_;
 
 
     // Private Member Functions
 
-        //- No copy construct
-        incompressibleGasMetalMixture(const incompressibleGasMetalMixture&) = delete;
-
-        //- No copy assignment
-        void operator=(const incompressibleGasMetalMixture&) = delete;
+        //- Calculate the heat source
+        void calcSource() final;
 
 public:
 
     //- Runtime type information
-    TypeName("incompressibleGasMetalMixture");
+    TypeName("gradAlpha");
 
     //- Constructor
-    incompressibleGasMetalMixture
+    gradAlphaHeatSource
     (
-        const volVectorField& U,
-        const surfaceScalarField& phi
+        const incompressibleGasMetalMixture& mixture,
+        const isoAdvection& advector
     );
 
     //- Destructor
-    ~incompressibleGasMetalMixture() override = default;
-
-
-    // Member Functions
-
-        // Evaluation
-
-            //- Return the thermal Marangoni force [N/m^3]
-            tmp<volVectorField> marangoniForce() const;
-
-            //- Return the solid-phase damping coefficient [N/m^3]
-            tmp<volScalarField> solidPhaseDamping() const;
-
-            //- Return the vapour pressure [Pa]
-            tmp<volScalarField> vapourPressure(const dimensionedScalar& p0) const;
-
-            //- Correct alpha-dependent fields
-            void correct() override;
+    ~gradAlphaHeatSource() final = default;
 };
 
 

@@ -25,19 +25,43 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "constant.H"
+#include "reflectionModel.H"
 
-#include "addToRunTimeSelectionTable.H"
+#include "error.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    namespace absorptivity
+    defineTypeName(reflectionModel);
+    defineRunTimeSelectionTable(reflectionModel, dictionary);
+}
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+Foam::autoPtr<Foam::reflectionModel> Foam::reflectionModel::New
+(
+    const dictionary& dict
+)
+{
+    const word modelType(dict.get<word>("type"));
+
+    Info<< "Selecting reflectionModel " << modelType << endl;
+
+    const auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+
+    if (!cstrIter.found())
     {
-        defineTypeName(constant);
-        addToRunTimeSelectionTable(absorptivityModel, constant, dictionary);
+        FatalIOErrorInLookup
+        (
+            dict,
+            "reflectionModel",
+            modelType,
+            *dictionaryConstructorTablePtr_
+        ) << exit(FatalIOError);
     }
+
+    return autoPtr<reflectionModel>(cstrIter()(dict));
 }
 
 

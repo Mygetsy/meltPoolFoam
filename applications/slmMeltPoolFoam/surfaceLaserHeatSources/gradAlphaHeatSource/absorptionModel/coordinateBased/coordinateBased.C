@@ -5,10 +5,10 @@
     \\  /    A nd           | Copyright held by original author(s)
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
-                            | Copyright (C) 2020-2021 Oleg Rogozin
+                            | Copyright (C) 2021 Oleg Rogozin
 -------------------------------------------------------------------------------
 License
-    This file is part of gasMetalThermalProperties.
+    This file is part of slmMeltPoolFoam.
 
     OpenFOAM is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
@@ -25,19 +25,37 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "gasMetalThermalProperties.H"
+#include "coordinateBased.H"
 
-#include "incompressibleTwoPhaseMixture.H"
+#include "addToRunTimeSelectionTable.H"
+
+#include "laserProperties.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    defineTemplateTypeNameAndDebug
-    (
-        gasMetalThermalProperties<incompressibleTwoPhaseMixture>,
-        0
-    );
+    namespace absorption
+    {
+        defineTypeName(coordinateBased);
+        addToRunTimeSelectionTable(absorptionModel, coordinateBased, dictionary);
+    }
 }
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+Foam::tmp<Foam::volScalarField> Foam::absorption::coordinateBased::A
+(
+    const volVectorField& gradAlphaM,
+    const laserProperties& laser
+) const
+{
+    const fvMesh& mesh = gradAlphaM.mesh();
+    const vector& n = laser.beam().direction();
+
+    return max(dimensionedScalar(gradAlphaM.dimensions()), gradAlphaM & n)
+        *(1 - (1 - A_)*exp(min(Zero, -(mesh.C() & n)/2/laser.radius())));
+}
+
 
 // ************************************************************************* //

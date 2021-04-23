@@ -5,10 +5,10 @@
     \\  /    A nd           | Copyright held by original author(s)
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
-                            | Copyright (C) 2020-2021 Oleg Rogozin
+                            | Copyright (C) 2021 Oleg Rogozin
 -------------------------------------------------------------------------------
 License
-    This file is part of gasMetalThermalProperties.
+    This file is part of slmMeltPoolFoam.
 
     OpenFOAM is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
@@ -25,19 +25,50 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "gasMetalThermalProperties.H"
+#include "absorptionModel.H"
 
-#include "incompressibleTwoPhaseMixture.H"
+#include "error.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    defineTemplateTypeNameAndDebug
-    (
-        gasMetalThermalProperties<incompressibleTwoPhaseMixture>,
-        0
-    );
+    defineTypeName(absorptionModel);
+    defineRunTimeSelectionTable(absorptionModel, dictionary);
 }
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+Foam::autoPtr<Foam::absorptionModel> Foam::absorptionModel::New
+(
+    const dictionary& dict
+)
+{
+    const word modelType(dict.get<word>("type"));
+
+    Info<< "Selecting absorptionModel " << modelType << endl;
+
+    const auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+
+    if (!cstrIter.found())
+    {
+        FatalIOErrorInLookup
+        (
+            dict,
+            "absorptionModel",
+            modelType,
+            *dictionaryConstructorTablePtr_
+        ) << exit(FatalIOError);
+    }
+
+    return autoPtr<absorptionModel>(cstrIter()(dict));
+}
+
+
+Foam::absorptionModel::absorptionModel(const dictionary& dict)
+:
+    A_("absorptivity", dimless, dict)
+{}
+
 
 // ************************************************************************* //

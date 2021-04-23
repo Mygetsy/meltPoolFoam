@@ -5,7 +5,8 @@
     \\  /    A nd           | Copyright held by original author(s)
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
-                            | Copyright (C) 2021 Oleg Rogozin
+                  laserDTRM | Copyright (C) 2017-2019 OpenCFD Ltd.
+       rayTracingHeatSource | Copyright (C) 2021 Oleg Rogozin
 -------------------------------------------------------------------------------
 License
     This file is part of slmMeltPoolFoam.
@@ -24,63 +25,76 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::absorptivity::constant
+    Foam::rayTracingHeatSource
 
 Description
-    Constant absorptivity.
+    The surface laser heat source calculated from ray tracing.
+
+SourceFiles
+    rayTracingHeatSource.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef absorptivity_constant_H
-#define absorptivity_constant_H
+#ifndef rayTracingHeatSource_H
+#define rayTracingHeatSource_H
 
-#include "absorptivityModel.H"
+#include "surfaceLaserHeatSource.H"
+#include "reflectionModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace absorptivity
-{
 
 /*---------------------------------------------------------------------------*\
-                        Class constant Declaration
+                     Class rayTracingHeatSource Declaration
 \*---------------------------------------------------------------------------*/
 
-class constant
+class rayTracingHeatSource
 :
-    public absorptivityModel
+    public surfaceLaserHeatSource
 {
+    // Private data
+
+        //- Dictionary
+        const dictionary dict_;
+
+        //- Number of theta angles
+        const label nTheta_;
+
+        //- Number of radials
+        const label nr_;
+
+        //- Maximum radius
+        const label maxr_;
+
+        //- The reflection model
+        autoPtr<reflectionModel> reflectionModelPtr_;
+
+    // Private Member Functions
+
+        //- Calculate the heat source
+        void calcSource() final;
 
 public:
 
     //- Runtime type information
-    TypeName("constant");
+    TypeName("rayTracing");
 
     //- Constructor
-    constant(const dictionary& dict) : absorptivityModel(dict) {}
+    rayTracingHeatSource
+    (
+        const incompressibleGasMetalMixture& mixture,
+        const isoAdvection& advector
+    );
 
     //- Destructor
-    virtual ~constant() = default;
-
-    // Member Functions
-
-        //- Return the absorptivity field
-        tmp<volScalarField> value
-        (
-            const volScalarField& alphaM,
-            const volVectorField& gradAlphaM,
-            const interfacialLaserHeatSource& laser
-        ) const final
-        {
-            return A_*mag(gradAlphaM);
-        }
+    ~rayTracingHeatSource() final = default;
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace absorptivity
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

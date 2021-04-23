@@ -24,23 +24,23 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::absorptivity::coordinateBased
+    Foam::absorption::coordinateBased
 
 Description
     Nonuniform coordinate-based absorptivity.
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef absorptivity_coordinateBased_H
-#define absorptivity_coordinateBased_H
+#ifndef absorption_coordinateBased_H
+#define absorption_coordinateBased_H
 
-#include "absorptivityModel.H"
+#include "absorptionModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-namespace absorptivity
+namespace absorption
 {
 
 /*---------------------------------------------------------------------------*\
@@ -49,12 +49,8 @@ namespace absorptivity
 
 class coordinateBased
 :
-    public absorptivityModel
+    public absorptionModel
 {
-    // Private data
-
-        //- Beam direction
-        const vector beamDirection_;
 
 public:
 
@@ -62,26 +58,26 @@ public:
     TypeName("coordinateBased");
 
     //- Constructor
-    coordinateBased(const dictionary& dict);
+    coordinateBased(const dictionary& dict) : absorptionModel(dict) {}
 
     //- Destructor
-    virtual ~coordinateBased() = default;
+    ~coordinateBased() final = default;
+
 
     // Member Functions
 
-        //- Return the absorptivity field
-        tmp<volScalarField> value
+        //- Return absorptivity []
+        tmp<volScalarField> A
         (
-            const volScalarField& alphaM,
             const volVectorField& gradAlphaM,
-            const interfacialLaserHeatSource& laser
+            const laserProperties& laser
         ) const final;
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace absorptivity
+} // End namespace absorption
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
