@@ -233,11 +233,33 @@ Foam::gasMetalThermalProperties<Mixture>::gasMetalThermalProperties
 template<class Mixture>
 void Foam::gasMetalThermalProperties<Mixture>::calcMetalFractions()
 {
-    const volScalarField x = (h_ - hAtMelting_)/thermo_.Hfusion()/(alphaM_ + SMALL);
+    const volScalarField hGasAtMelt =  thermo_.hGas(
+                                        geometricUniformField<scalar>(thermo_.Tmelting().value()),
+                                        alphaM_ 
+                                        );
 
-    liquidFractionInMetal_ = thermo_.sigmoid().value(x);
-    liquidFraction_ = alphaM_*liquidFractionInMetal_;
-    //liquidFractionPrimeEnthalpy_ = thermo_.sigmoid().derivative(x)/thermo_.Hfusion();
+    const volScalarField hSolidAtMelt = thermo_.hSol(
+                                        geometricUniformField<scalar>(thermo_.Tmelting().value()),
+                                        alphaM_ 
+                                        );
+
+    const volScalarField hLiquidAtMelt = thermo_.hLiq(
+                                        geometricUniformField<scalar>(thermo_.Tmelting().value()),
+                                        alphaM_ 
+                                        );
+                                         
+    const volScalarField phiAtMelt = (h_*(alphaG_*thermo_.rhoGas() + alphaM_*thermo_.rhoSolid())
+                              - alphaG_*thermo_.rhoGas()*hGasAtMelt
+                              - alphaM_*thermo_.rhoSolid()*hSolidAtMelt)
+                            /(h_*(thermo_.rhoSolid() - thermo_.rhoLiquid())
+                              +  thermo_.rhoLiquid()*hLiquidAtMelt
+                              - thermo_.rhoSolid()*hSolidAtMelt
+                            );
+    
+    const  volScalarField sigmoidArgument = (phiAtMelt - 0.5)/(alphaM_ + SMALL);
+
+    liquidFractionInMetal_ = thermo_.sigmoid().value(sigmoidArgument); //!TODO: May be delete
+    liquidFraction_ = alphaM_*thermo_.sigmoid().value(sigmoidArgument);
 }
 
 
@@ -271,7 +293,7 @@ void Foam::gasMetalThermalProperties<Mixture>::correctThermo()
 {
     calcMetalFractions();
 
-    T_ = thermo_.T(h_, hAtMelting_, liquidFraction_, alphaG_);
+    T_ = thermo_.T(h_, liquidFraction_, alphaG_);
     Cp_ = thermo_.Cp(T_, liquidFraction_, alphaG_);
     kappa_ = thermo_.kappa(T_, liquidFraction_, alphaG_);
     HsPrimeAlphaG_ = thermo_.HsPrimeAlphaG(T_);

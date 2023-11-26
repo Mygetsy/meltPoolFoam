@@ -60,6 +60,7 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
     gasMetalThermalProperties(U.mesh(), *this),
     sigmaPtr_(Function1<scalar>::New("sigma", this->subDict("sigma"))),
     mushyCoeff_("mushyCoeff", dimDensity/dimTime, *this),
+    qMushyCoeff_("qMushyCoeff", dimless, *this),
     Tcritical_("Tcritical", dimTemperature, thermo().subDict("metal")),
     metalDict_(subDict("metal")),
     quasiIncompressible_(metalDict_.getOrDefault("quasiIncompressible", false)),
@@ -80,6 +81,7 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
     {
         // Need for DDt in divPhi()
         T().oldTime();
+        liquidFraction().oldTime();
         liquidFractionInMetal().oldTime();
 
         Info<< " -- Liquid metal density at " << Tmelting + 1000 << " = "
@@ -167,7 +169,7 @@ void Foam::incompressibleGasMetalMixture::updateRhoM()
         {
             f = rhoM(Tm, T, phi);
         },
-        T(), liquidFractionInMetal()
+        T(), liquidFraction()
     );
 }
 
@@ -192,7 +194,7 @@ Foam::tmp<Foam::volVectorField> Foam::incompressibleGasMetalMixture::marangoniFo
 Foam::tmp<Foam::volScalarField> Foam::incompressibleGasMetalMixture::solidPhaseDamping() const
 {
     return mushyCoeff_*alphaM_
-        *sqr(1 - liquidFractionInMetal())/(sqr(liquidFractionInMetal()) + SMALL);
+        *sqr(1 - liquidFraction())/(sqr(liquidFraction()) + qMushyCoeff_);
 }
 
 
@@ -215,9 +217,9 @@ const Foam::volScalarField& Foam::incompressibleGasMetalMixture::divPhi()
         const dimensionedScalar rhoJump("rhoJump", dimDensity, rhoJump_);
         divPhi_ =
         (
-          - rhoJump*fvc::DDt(phi_, liquidFractionInMetal())
+          - rhoJump*fvc::DDt(phi_, liquidFraction())
           - dRhoMDT()*fvc::DDt(phi_, T())
-        )*alphaM_/rhoM_;
+        )/rhoM_;
     }
 
     return divPhi_;

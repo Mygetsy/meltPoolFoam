@@ -50,6 +50,10 @@ Foam::gasMetalThermo::gasMetalThermo(const fvMesh& mesh)
     solid_(solidDict_),
     liquid_(liquidDict_),
     gas_(gasDict_),
+    //!TODO: Temporary rhoPhase_ do not know how to read from transport properties here
+    rhoSolid_(metalDict_.get<scalar>("rhoSolid")),
+    rhoLiquid_(metalDict_.get<scalar>("rhoLiquid")),
+    rhoGas_(gasDict_.get<scalar>("rhoGas")),
     Tmelting_(metalDict_.get<scalar>("Tmelting")),
     Tboiling_(metalDict_.get<scalar>("Tboiling")),
     Hfusion_(metalDict_.get<scalar>("Hfusion")),

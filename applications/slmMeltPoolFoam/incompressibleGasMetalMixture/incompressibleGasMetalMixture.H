@@ -67,6 +67,9 @@ class incompressibleGasMetalMixture
             //- Coefficient related to the permeability of mushy layer [kg/m^3/s]
             const dimensionedScalar mushyCoeff_;
 
+            //- Coefficient related to the permeability of mushy layer [kg/m^3/s]
+            const dimensionedScalar qMushyCoeff_;
+
             //- Critical temperature for metal vapour [K]
             const dimensionedScalar Tcritical_;
 

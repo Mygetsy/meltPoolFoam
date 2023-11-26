@@ -83,9 +83,12 @@ class gasMetalThermo
         //- Dictionaries
         const dictionary metalDict_, solidDict_, liquidDict_, gasDict_;
 
-        //- Properties of all phases
+        //- Kappa and Cp properties of all phases
         const kappaCp solid_, liquid_, gas_;
-
+        
+        //- Density of all phases
+        const scalar rhoSolid_, rhoLiquid_, rhoGas_;
+        
         //- Temperature of melting [K]
         const scalar Tmelting_;
 
@@ -172,6 +175,24 @@ public:
             {
                 return *sigmoidPtr_;
             }
+            
+            //- Return solid metal density [kg/m^3]
+            dimensionedScalar rhoSolid() const
+            {
+                return dimensionedScalar("rhoSolid", dimDensity, rhoSolid_);
+            }
+
+            //- Return liquid metal density [kg/m^3]
+            dimensionedScalar rhoLiquid() const
+            {
+                return dimensionedScalar("rhoLiquid", dimDensity, rhoLiquid_);
+            }
+
+            //- Return gas density [kg/m^3]
+            dimensionedScalar rhoGas() const
+            {
+                return dimensionedScalar("rhoGas", dimDensity, rhoGas_);
+            }
 
 
         // Evaluation
@@ -203,6 +224,33 @@ public:
                 const T3& gasFraction,
                 const word& name = "h"
             ) const;
+            
+            //- Specific enthalpy Gas phase [J/kg]
+            template<class T1, class T2>
+            tmp<T2> hGas
+            (
+                const T1& T,
+                const T2& gasFraction,
+                const word& name = "hGas"
+            ) const;
+
+            //- Specific enthalpy Solid phase [J/kg]
+            template<class T1, class T2>
+            tmp<T2> hSol
+            (
+                const T1& T,
+                const T2& gasFraction,
+                const word& name = "hSol"
+            ) const;
+
+            //- Specific enthalpy Liquid phase [J/kg]
+            template<class T1, class T2>
+            tmp<T2> hLiq
+            (
+                const T1& T,
+                const T2& gasFraction,
+                const word& name = "hLiq"
+            ) const;
 
             //- Specific enthalpy at the melting temperature [J/kg]
             template<class T1>
@@ -217,7 +265,6 @@ public:
             tmp<T1> T
             (
                 const T1& h,
-                const T1& hAtMelting,
                 const T2& liquidFraction,
                 const T3& gasFraction
             ) const;

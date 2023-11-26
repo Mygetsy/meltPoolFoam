@@ -66,7 +66,7 @@ if (!pimple.firstIter())
     phi = 2.0*phi - phi.prevIter();
 }
 
-rho == alpha1*rho1 + alpha2*rho2;
+rho == alpha1*rho1 + alpha2*rho2; // Candidate to change rho
 
 volScalarField::Internal contErr((fvc::ddt(rho) + fvc::div(rhoPhi))());
 

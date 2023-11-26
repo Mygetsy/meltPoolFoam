@@ -66,7 +66,7 @@ Foam::tmp<T1> Foam::gasMetalThermo::Cp
 {
     const T2 sharpLiquidFraction
     (
-        (1 - gasFraction)*pos(liquidFraction - (1 - gasFraction)/2)
+        (1 - gasFraction)*pos(liquidFraction - (1 - gasFraction)/2) //!TODO: Mb delete
     );
 
     return generateGeometricField<T1>
@@ -76,7 +76,12 @@ Foam::tmp<T1> Foam::gasMetalThermo::Cp
         dimGasConstant,
         [this](scalar T, scalar phi, scalar alphaG)
         {
-            return gasMetalAverage(gas_.Cp, liquid_.Cp, solid_.Cp, T, phi, alphaG);
+            scalar alphaM = 1 - alphaG;
+            scalar rho = alphaG*rhoGas_ + phi*rhoLiquid_ + (alphaM - phi)*rhoSolid_;
+            
+            return (alphaG*rhoGas_*gas_.Cp.value(T)
+                    + (alphaM - phi)*rhoSolid_*solid_.Cp.value(T)
+                    + phi*rhoLiquid_*liquid_.Cp.value(T))/rho;
         },
         T, sharpLiquidFraction, gasFraction
     );
@@ -122,18 +127,79 @@ Foam::tmp<T3> Foam::gasMetalThermo::h
         [this](scalar T, scalar phi, scalar alphaG)
         {
             scalar alphaM = 1 - alphaG;
-            scalar piecewise =
-                T <= Tmelting_
-              ? solid_.Cp.integral(0, T)
-              : solid_.Cp.integral(0, Tmelting_) + liquid_.Cp.integral(Tmelting_, T);
-
-            return alphaG*gas_.Cp.integral(0, T) + alphaM*piecewise
-                + Hfusion_*phi;
+            scalar rho = alphaG*rhoGas_ + phi*rhoLiquid_ + (alphaM - phi)*rhoSolid_;
+            
+            return (alphaG*rhoGas_*gas_.Cp.integral(0, T)
+                    + (alphaM - phi)*rhoSolid_*solid_.Cp.integral(0, T) 
+                    + phi*rhoLiquid_*(solid_.Cp.integral(0, Tmelting_)
+                    + liquid_.Cp.integral(Tmelting_, T) + Hfusion_))/rho;
         },
         T, liquidFraction, gasFraction
     );
 }
 
+template<class T1, class T2>
+Foam::tmp<T2> Foam::gasMetalThermo::hGas
+(
+    const T1& T,
+    const T2& gasFraction, //!TODO: How to do not use this field.
+    const word& name
+) const
+{
+    return generateGeometricField<T2>
+    (
+        name,
+        mesh_,
+        dimEnergy/dimMass,
+        [this](scalar T)
+        {
+            return gas_.Cp.integral(0, T);
+        },
+        T
+    );
+}
+
+template<class T1, class T2>
+Foam::tmp<T2> Foam::gasMetalThermo::hSol
+(
+    const T1& T,
+    const T2& gasFraction,//!
+    const word& name
+) const
+{
+    return generateGeometricField<T2>
+    (
+        name,
+        mesh_,
+        dimEnergy/dimMass,
+        [this](scalar T)
+        {
+            return solid_.Cp.integral(0, T);
+        },
+        T
+    );
+}
+
+template<class T1, class T2>
+Foam::tmp<T2> Foam::gasMetalThermo::hLiq
+(
+    const T1& T,
+    const T2& gasFraction,//!
+    const word& name
+) const
+{
+    return generateGeometricField<T2>
+    (
+        name,
+        mesh_,
+        dimEnergy/dimMass,
+        [this](scalar T)
+        {
+            return solid_.Cp.integral(0, Tmelting_) + liquid_.Cp.integral(Tmelting_, T) + Hfusion_;
+        },
+        T
+    );
+}
 
 template<class T1>
 Foam::tmp<T1> Foam::gasMetalThermo::hAtMelting
@@ -180,42 +246,39 @@ template<class T1, class T2, class T3>
 Foam::tmp<T1> Foam::gasMetalThermo::T
 (
     const T1& h,
-    const T1& hAtMelting,
     const T2& liquidFraction,
     const T3& gasFraction
 ) const
-{
+{   
     return generateGeometricField<T1>
     (
         "T",
         mesh_,
         dimTemperature,
-        [this](scalar h, scalar hAtMelting, scalar phi, scalar alphaG)
+        [this](scalar h, scalar phi, scalar alphaG)
         {
-            scalar alphaM = 1 - alphaG;
-            scalar A = alphaG*gas_.Cp.derivative(0);
-            scalar B = alphaG*gas_.Cp.value(0);
-            scalar C = h - Hfusion_*phi - alphaM*solid_.Cp.integral(0, Tmelting_);
+           scalar alphaM = 1 - alphaG;
+           scalar rho = alphaG*rhoGas_ + phi*rhoLiquid_ + (alphaM - phi)*rhoSolid_;
 
-            A +=
-                h < hAtMelting
-              ? alphaM*solid_.Cp.derivative(0)
-              : alphaM*liquid_.Cp.derivative(0);
-            B +=
-                h < hAtMelting
-              ? alphaM*solid_.Cp.value(0)
-              : alphaM*liquid_.Cp.value(0);
-            C +=
-                h < hAtMelting
-              ? alphaM*solid_.Cp.integral(0, Tmelting_)
-              : alphaM*liquid_.Cp.integral(0, Tmelting_);
+            scalar A =  rhoGas_*alphaG*gas_.Cp.derivative(0)
+                        + (alphaM - phi)*rhoSolid_*solid_.Cp.derivative(0)
+                        + phi*rhoLiquid_*liquid_.Cp.derivative(0);
 
-            return
-                mag(A) > SMALL
+            scalar B = (alphaM - phi)*rhoSolid_*solid_.Cp.value(0)
+                        + phi*rhoLiquid_*liquid_.Cp.value(0)
+                        + alphaG*rhoGas_*gas_.Cp.value(0);
+            
+            scalar C = rho*h
+                        - phi*rhoLiquid_*solid_.Cp.integral(0, Tmelting_)
+                        + phi*rhoLiquid_*liquid_.Cp.integral(0, Tmelting_)
+                        - phi*rhoLiquid_*Hfusion_;
+
+            return 
+            mag(A) > SMALL
               ? (Foam::sqrt(sqr(B) + 2*A*C) - B)/A
               : C/B;
         },
-        h, hAtMelting, liquidFraction, gasFraction
+        h, liquidFraction, gasFraction
     );
 }
 
