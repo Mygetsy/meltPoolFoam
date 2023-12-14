@@ -282,5 +282,48 @@ Foam::tmp<T1> Foam::gasMetalThermo::T
     );
 }
 
+template<class T1, class T2>
+Foam::tmp<T2> Foam::gasMetalThermo::phiCalc
+(
+    const T1& h,
+    const T2& gasFraction
+) const
+{   
+    return generateGeometricField<T2>
+    (
+        "phiCalc",
+        mesh_,
+        dimless,
+        [this](scalar h, scalar alphaG)
+        {
+            scalar alphaM = 1 - alphaG;
+            scalar hGasTmelt = gas_.Cp.integral(0, Tmelting_);
+            scalar hSolidTmelt = solid_.Cp.integral(0, Tmelting_);
+            scalar hLiquidTmelt = solid_.Cp.integral(0, Tmelting_) + Hfusion_;
+
+            scalar gasSolidEnthalpy = (alphaG*rhoGas_*hGasTmelt + alphaM*rhoSolid_*hSolidTmelt)
+                                    /(alphaG*rhoGas_ + alphaM*rhoSolid_);
+
+            scalar gasLiquidEnthalpy = (alphaG*rhoGas_*hGasTmelt + alphaM*rhoLiquid_*hLiquidTmelt)
+                                    /(alphaG*rhoGas_ + alphaM*rhoLiquid_);
+            
+            scalar phiTmelt = (h*(alphaG*rhoGas_ + alphaM*rhoSolid_) - alphaG*rhoGas_*hGasTmelt - alphaM*rhoSolid_*hSolidTmelt)
+                            /(h*(rhoSolid_ - rhoLiquid_) + rhoLiquid_*hLiquidTmelt - rhoSolid_*hSolidTmelt);
+            
+
+            if (h < gasSolidEnthalpy){
+                return 0.;
+                }
+            else if ((h > gasLiquidEnthalpy)) {
+                return alphaM;
+                }
+            else {
+                return phiTmelt;
+                }
+        },
+        h, gasFraction
+    );
+}
+
 
 // ************************************************************************* //

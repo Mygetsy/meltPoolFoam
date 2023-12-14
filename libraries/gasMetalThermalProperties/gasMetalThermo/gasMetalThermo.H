@@ -269,6 +269,14 @@ public:
                 const T3& gasFraction
             ) const;
 
+            //- Liquid fraction of metal
+            template<class T1, class T2>
+            tmp<T2> phiCalc
+            (
+                const T1& h,
+                const T2& gasFraction
+            ) const;
+
             //- Derivative of enthalpy at the melting temperature [J/kg]
             dimensionedScalar hAtMeltingPrime() const;
 };

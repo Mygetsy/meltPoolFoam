@@ -204,6 +204,7 @@ int main(int argc, char *argv[])
             #include "UEqn.H"
 
             // --- Enthalpy corrector loop
+            mixture.correctThermo(); // update liquid fraction to prevent negative enthalpy
             label nCorrEnthalpy(readLabel(pimple.dict().lookup("nEnthalpyCorrectors")));
             for (label corrEnthalpy = 1; corrEnthalpy <= nCorrEnthalpy; ++corrEnthalpy)
             {
@@ -227,6 +228,9 @@ int main(int argc, char *argv[])
             }
         }
 
+        const dimensionedScalar mass  = fvc::domainIntegrate(rho1 * alpha1);
+        Info<< "Mass in metal: " << mass.value()  << endl;
+        
         #include "updatePassiveFields.H"
         #include "effectiveAbsorptivity.H"
 

@@ -234,7 +234,7 @@ template<class Mixture>
 void Foam::gasMetalThermalProperties<Mixture>::calcMetalFractions()
 {
     const volScalarField hGasAtMelt =  thermo_.hGas(
-                                        geometricUniformField<scalar>(thermo_.Tmelting().value()),
+                                        T_,
                                         alphaM_ 
                                         );
 
@@ -248,18 +248,21 @@ void Foam::gasMetalThermalProperties<Mixture>::calcMetalFractions()
                                         alphaM_ 
                                         );
                                          
-    const volScalarField phiAtMelt = (h_*(alphaG_*thermo_.rhoGas() + alphaM_*thermo_.rhoSolid())
-                              - alphaG_*thermo_.rhoGas()*hGasAtMelt
-                              - alphaM_*thermo_.rhoSolid()*hSolidAtMelt)
-                            /(h_*(thermo_.rhoSolid() - thermo_.rhoLiquid())
-                              +  thermo_.rhoLiquid()*hLiquidAtMelt
-                              - thermo_.rhoSolid()*hSolidAtMelt
-                            );
-    
-    const  volScalarField sigmoidArgument = (phiAtMelt - 0.5)/(alphaM_ + SMALL);
+    const volScalarField rho1 = alphaG_*thermo_.rhoGas() + alphaM_*thermo_.rhoSolid();
+    const volScalarField rho2 = alphaG_*thermo_.rhoGas() + alphaM_*thermo_.rhoLiquid();
 
-    liquidFractionInMetal_ = thermo_.sigmoid().value(sigmoidArgument); //!TODO: May be delete
-    liquidFraction_ = alphaM_*thermo_.sigmoid().value(sigmoidArgument);
+    const volScalarField rho1h1 = alphaG_*thermo_.rhoGas()*hGasAtMelt + alphaM_*thermo_.rhoSolid()*hSolidAtMelt;
+    const volScalarField rho2h2 = alphaG_*thermo_.rhoGas()*hGasAtMelt + alphaM_*thermo_.rhoLiquid()*hLiquidAtMelt;
+
+    const volScalarField h_m = (rho1h1 + rho2h2)/(rho1 + rho2);
+
+    const volScalarField sigmoidArgument = (h_ - h_m)*sqr((rho1 + rho2))/(4*rho1*rho2*(rho2h2/rho2 - rho1h1/rho1 + h_m*ROOTVSMALL));
+
+
+    // liquidFractionInMetal_ = thermo_.sigmoid().value(sigmoidArgument); //!TODO: May be delete
+    // liquidFraction_ = alphaM_*thermo_.sigmoid().value(sigmoidArgument);
+    liquidFractionInMetal_ = thermo_.sigmoid().value(sigmoidArgument);
+    liquidFraction_ = liquidFractionInMetal_ * alphaM_;
 }
 
 

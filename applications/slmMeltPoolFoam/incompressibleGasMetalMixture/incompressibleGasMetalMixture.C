@@ -169,7 +169,7 @@ void Foam::incompressibleGasMetalMixture::updateRhoM()
         {
             f = rhoM(Tm, T, phi);
         },
-        T(), liquidFraction()
+        T(), liquidFractionInMetal()
     );
 }
 
@@ -194,7 +194,7 @@ Foam::tmp<Foam::volVectorField> Foam::incompressibleGasMetalMixture::marangoniFo
 Foam::tmp<Foam::volScalarField> Foam::incompressibleGasMetalMixture::solidPhaseDamping() const
 {
     return mushyCoeff_*alphaM_
-        *sqr(1 - liquidFraction())/(sqr(liquidFraction()) + qMushyCoeff_);
+        *sqr(alphaM_ - liquidFraction())/(sqr(liquidFraction()) + qMushyCoeff_);
 }
 
 
@@ -218,8 +218,8 @@ const Foam::volScalarField& Foam::incompressibleGasMetalMixture::divPhi()
         divPhi_ =
         (
           - rhoJump*fvc::DDt(phi_, liquidFraction())
-          - dRhoMDT()*fvc::DDt(phi_, T())
-        )/rhoM_;
+        //   - dRhoMDT()*fvc::DDt(phi_, T())
+        )/(alphaM_*rhoM_ + (rho1_ - rhoJump) - alphaM_*(rho1_ - rhoJump));
     }
 
     return divPhi_;
