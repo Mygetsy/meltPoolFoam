@@ -16,7 +16,7 @@ fvVectorMatrix UEqn
   + turbulence->divDevRhoReff(rho, U)
   + fvm::Sp(mixture.solidPhaseDamping(), U)
  ==
-    mixture.marangoniForce()*2*rho/(rho1 + rho2)
+    liquidFraction*mixture.marangoniForce()*2*rho/(rho1 + rho2)
 );
 
 UEqn.relax();
@@ -33,7 +33,7 @@ if (pimple.momentumPredictor())
                 (
                     mixture.surfaceTensionForce()
                   + recoilPressure
-                )*2*fvc::interpolate(rho/(rho1 + rho2), "interpolate(rho)")
+                )
               - ghf*fvc::snGrad(rhok)
               - fvc::snGrad(p_rgh)
             )*mesh.magSf()

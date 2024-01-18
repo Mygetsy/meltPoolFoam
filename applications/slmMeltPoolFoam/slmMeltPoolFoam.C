@@ -198,13 +198,14 @@ int main(int argc, char *argv[])
             #include "alphaEqnSubCycle.H"
 
             mixture.correct();  // update mixture.gradAlpha needed for laserHeatSource
+            mixture.correctThermo(); // update liquid fraction
+
             laserHeatSource->correct();
 
             // --- Momentum predictor
-            #include "UEqn.H"
+            //#include "UEqn.H"
 
             // --- Enthalpy corrector loop
-            mixture.correctThermo(); // update liquid fraction to prevent negative enthalpy
             label nCorrEnthalpy(readLabel(pimple.dict().lookup("nEnthalpyCorrectors")));
             for (label corrEnthalpy = 1; corrEnthalpy <= nCorrEnthalpy; ++corrEnthalpy)
             {
@@ -216,14 +217,15 @@ int main(int argc, char *argv[])
                 continue;
             }
 
+	    #include "UEqn.H"		
             // --- Pressure corrector loop
             while (pimple.correct())
-            {
+	    { 
                 #include "pEqn.H"
             }
 
             if (pimple.turbCorr())
-            {
+	    {
                 turbulence->correct();
             }
         }
