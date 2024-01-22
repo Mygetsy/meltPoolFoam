@@ -68,14 +68,18 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
     dRhoMDTSolid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "solid"))),
     dRhoMDTLiquid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "liquid"))),
     rhoM_(volScalarField::New("rhoM", U.mesh(), rho1_)),
-    divPhi_(volScalarField::New("divPhi", U.mesh(), dimensionedScalar(inv(dimTime))))
+    divPhi_(volScalarField::New("divPhi", U.mesh(), dimensionedScalar(inv(dimTime)))),
+    initialMetalMass_("initialMetalMass_",dimMass, 0)
+		
 {
     const scalar Tmelting = thermo().Tmelting().value();
+    initialMetalMass_.value() = fvc::domainIntegrate(rhoM_*alphaM_).value(); 
 
     Info<< "Transport properties:" << endl
         << " -- Surface tension at Tmelting = " << sigmaPtr_->value(Tmelting) << endl
         << " -- Marangoni coefficient at Tmelting = " << dSigmaDT(Tmelting) << endl
-        << " -- Gas density = " << rho2_.value() << endl;
+        << " -- Gas density = " << rho2_.value() << endl
+    	<< " -- Initial metal mass  = " << initialMetalMass_.value() << endl;
 
     if (quasiIncompressible_)
     {
@@ -214,12 +218,14 @@ const Foam::volScalarField& Foam::incompressibleGasMetalMixture::divPhi()
 {
     if (quasiIncompressible_)
     {
-        const dimensionedScalar rhoJump("rhoJump", dimDensity, rhoJump_);
-        divPhi_ =
-        (
-          - rhoJump*fvc::DDt(phi_, liquidFraction())
+	const dimensionedScalar updatedMetalMass(fvc::domainIntegrate(rhoM_*alphaM_));
+	const dimensionedScalar rhoJump("rhoJump", dimDensity, rhoJump_);
+        
+	divPhi_ = 
+	(
+          - rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal())
         //   - dRhoMDT()*fvc::DDt(phi_, T())
-        )/(alphaM_*rhoM_ + (rho1_ - rhoJump) - alphaM_*(rho1_ - rhoJump));
+        )/rhoM_;
     }
 
     return divPhi_;

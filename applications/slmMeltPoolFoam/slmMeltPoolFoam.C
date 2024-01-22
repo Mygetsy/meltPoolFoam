@@ -102,6 +102,8 @@ int main(int argc, char *argv[])
 
         // --- Calculate time-dependent quantities
         const dimensionedScalar totalEnthalpy = fvc::domainIntegrate(rho*h);
+	const dimensionedScalar initialMass = fvc::domainIntegrate(rho1 * alpha1);
+	dimensionedScalar updatedMass = fvc::domainIntegrate(rho1 * alpha1);
         // NB: SMALL is too small to be used in the denominator
         const volScalarField divUInMetal("divUInMetal", fvc::div(phi)/(alpha1 + ROOTSMALL));
 
@@ -203,7 +205,7 @@ int main(int argc, char *argv[])
             laserHeatSource->correct();
 
             // --- Momentum predictor
-            //#include "UEqn.H"
+            // #include "UEqn.H"
 
             // --- Enthalpy corrector loop
             label nCorrEnthalpy(readLabel(pimple.dict().lookup("nEnthalpyCorrectors")));
@@ -220,7 +222,7 @@ int main(int argc, char *argv[])
 	    #include "UEqn.H"		
             // --- Pressure corrector loop
             while (pimple.correct())
-	    { 
+	    {
                 #include "pEqn.H"
             }
 
@@ -230,8 +232,8 @@ int main(int argc, char *argv[])
             }
         }
 
-        const dimensionedScalar mass  = fvc::domainIntegrate(rho1 * alpha1);
-        Info<< "Mass in metal: " << mass.value()  << endl;
+        updatedMass.value()  = fvc::domainIntegrate(rho1 * alpha1).value();
+        Info<< "Mass in metal: " << updatedMass.value()  << endl;
         
         #include "updatePassiveFields.H"
         #include "effectiveAbsorptivity.H"
@@ -240,11 +242,11 @@ int main(int argc, char *argv[])
         #include "timeConsumption.H"
         runTime.printExecutionTime(Info);
 
-        if (reduceTimeStep)
-        {
-            Info<< "Halve the time step since all PIMPLE iterations were used" << endl;
-            runTime.setDeltaT(runTime.deltaTValue()/2, false);
-        }
+        //if (reduceTimeStep)
+        //{
+            //Info<< "Halve the time step since all PIMPLE iterations were used" << endl;
+            //runTime.setDeltaT(runTime.deltaTValue()/2, false);
+        //}
     }
 
     Info<< "End\n" << endl;
