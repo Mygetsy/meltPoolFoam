@@ -77,11 +77,11 @@ Foam::tmp<T1> Foam::gasMetalThermo::Cp
         [this](scalar T, scalar phi, scalar alphaG)
         {
             scalar alphaM = 1 - alphaG;
-            scalar rho = alphaG*rhoGas_ + phi*rhoLiquid_ + (alphaM - phi)*rhoSolid_;
+            scalar rho = alphaG*rhoGas_ + phi*rhoLiquid_*(1 + betaLiquid_*(T - Tmelting_)) + (alphaM - phi)*rhoSolid_;
             
             return (alphaG*rhoGas_*gas_.Cp.value(T)
                     + (alphaM - phi)*rhoSolid_*solid_.Cp.value(T)
-                    + phi*rhoLiquid_*liquid_.Cp.value(T))/rho;
+                    + phi*rhoLiquid_*(1 + betaLiquid_*(T - Tmelting_))*liquid_.Cp.value(T))/rho;
         },
         T, sharpLiquidFraction, gasFraction
     );
@@ -127,12 +127,13 @@ Foam::tmp<T3> Foam::gasMetalThermo::h
         [this](scalar T, scalar phi, scalar alphaG)
         {
             scalar alphaM = 1 - alphaG;
-            scalar rho = alphaG*rhoGas_ + phi*rhoLiquid_ + (alphaM - phi)*rhoSolid_;
+            scalar rho = alphaG*rhoGas_ + phi*rhoLiquid_*(1 + betaLiquid_*(T - Tmelting_)) + (alphaM - phi)*rhoSolid_;
             
             return (alphaG*rhoGas_*gas_.Cp.integral(0, T)
                     + (alphaM - phi)*rhoSolid_*solid_.Cp.integral(0, T) 
-                    + phi*rhoLiquid_*(solid_.Cp.integral(0, Tmelting_)
-                    + liquid_.Cp.integral(Tmelting_, T) + Hfusion_))/rho;
+                    + phi*rhoLiquid_*(1 + betaLiquid_*(T - Tmelting_))*(
+                    solid_.Cp.integral(0, Tmelting_) + liquid_.Cp.integral(Tmelting_, T) + Hfusion_)
+                    )/rho;
         },
         T, liquidFraction, gasFraction
     );
@@ -257,21 +258,23 @@ Foam::tmp<T1> Foam::gasMetalThermo::T
         dimTemperature,
         [this](scalar h, scalar phi, scalar alphaG)
         {
-           scalar alphaM = 1 - alphaG;
-           scalar rho = alphaG*rhoGas_ + phi*rhoLiquid_ + (alphaM - phi)*rhoSolid_;
 
-            scalar A =  rhoGas_*alphaG*gas_.Cp.derivative(0)
-                        + (alphaM - phi)*rhoSolid_*solid_.Cp.derivative(0)
-                        + phi*rhoLiquid_*liquid_.Cp.derivative(0);
+            scalar alphaM = 1 - alphaG;
+            scalar hLiquidTmelt = solid_.Cp.integral(0, Tmelting_) + Hfusion_;
 
-            scalar B = (alphaM - phi)*rhoSolid_*solid_.Cp.value(0)
-                        + phi*rhoLiquid_*liquid_.Cp.value(0)
+            scalar A = (alphaM - phi)*rhoSolid_*solid_.Cp.derivative(0) 
+                        + 2*betaLiquid_*phi*rhoLiquid_*liquid_.Cp.value(0);
+
+            scalar B = betaLiquid_*phi*rhoLiquid_*(hLiquidTmelt - h)
+                        + (1 - 2*Tmelting_*betaLiquid_)*phi*rhoLiquid_*liquid_.Cp.value(0)
+                        + (alphaM - phi)*rhoSolid_*solid_.Cp.value(0)
                         + alphaG*rhoGas_*gas_.Cp.value(0);
             
-            scalar C = rho*h
-                        - phi*rhoLiquid_*solid_.Cp.integral(0, Tmelting_)
-                        + phi*rhoLiquid_*liquid_.Cp.integral(0, Tmelting_)
-                        - phi*rhoLiquid_*Hfusion_;
+            scalar C = hLiquidTmelt*phi*rhoLiquid_*(Tmelting_*betaLiquid_ - 1)
+                        + Tmelting_*phi*rhoLiquid_*liquid_.Cp.value(0)*(1 - Tmelting_*betaLiquid_)
+                        + (
+                            (1 - Tmelting_*betaLiquid_)*phi*rhoLiquid_ + (alphaM - phi)*rhoSolid_ + alphaG*rhoGas_
+                        )*h;
 
             return 
             mag(A) > SMALL

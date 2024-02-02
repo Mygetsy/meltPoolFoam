@@ -54,6 +54,7 @@ Foam::gasMetalThermo::gasMetalThermo(const fvMesh& mesh)
     rhoSolid_(metalDict_.get<scalar>("rhoSolid")),
     rhoLiquid_(metalDict_.get<scalar>("rhoLiquid")),
     rhoGas_(gasDict_.get<scalar>("rhoGas")),
+    betaLiquid_(metalDict_.get<scalar>("betaLiquid")),
     Tmelting_(metalDict_.get<scalar>("Tmelting")),
     Tboiling_(metalDict_.get<scalar>("Tboiling")),
     Hfusion_(metalDict_.get<scalar>("Hfusion")),

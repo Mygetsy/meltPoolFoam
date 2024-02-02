@@ -68,18 +68,15 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
     dRhoMDTSolid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "solid"))),
     dRhoMDTLiquid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "liquid"))),
     rhoM_(volScalarField::New("rhoM", U.mesh(), rho1_)),
-    divPhi_(volScalarField::New("divPhi", U.mesh(), dimensionedScalar(inv(dimTime)))),
-    initialMetalMass_("initialMetalMass_",dimMass, 0)
+    divPhi_(volScalarField::New("divPhi", U.mesh(), dimensionedScalar(inv(dimTime))))
 		
 {
     const scalar Tmelting = thermo().Tmelting().value();
-    initialMetalMass_.value() = fvc::domainIntegrate(rhoM_*alphaM_).value(); 
 
     Info<< "Transport properties:" << endl
         << " -- Surface tension at Tmelting = " << sigmaPtr_->value(Tmelting) << endl
         << " -- Marangoni coefficient at Tmelting = " << dSigmaDT(Tmelting) << endl
-        << " -- Gas density = " << rho2_.value() << endl
-    	<< " -- Initial metal mass  = " << initialMetalMass_.value() << endl;
+        << " -- Gas density = " << rho2_.value() << endl;
 
     if (quasiIncompressible_)
     {
@@ -158,8 +155,8 @@ Foam::tmp<Foam::volScalarField> Foam::incompressibleGasMetalMixture::dRhoMDT() c
 
 Foam::scalar Foam::incompressibleGasMetalMixture::rhoM(scalar Tm, scalar T, scalar phi) const
 {
-    scalar piecewise = T <= Tm ? dRhoMDTSolid_.integral(Tm, T) : dRhoMDTLiquid_.integral(Tm, T);
-    return rho1_.value() + piecewise - (1 - phi)*rhoJump_;
+    scalar beta = thermo().betaLiquid().value();
+    return rho1_.value() - (1 - phi)*rhoJump_ + rho1_.value()*phi*beta*(T - Tm);
 }
 
 
@@ -218,13 +215,14 @@ const Foam::volScalarField& Foam::incompressibleGasMetalMixture::divPhi()
 {
     if (quasiIncompressible_)
     {
-	const dimensionedScalar updatedMetalMass(fvc::domainIntegrate(rhoM_*alphaM_));
 	const dimensionedScalar rhoJump("rhoJump", dimDensity, rhoJump_);
+    const dimensionedScalar rhoLiq(thermo().rhoLiquid());
+    const dimensionedScalar beta(thermo().betaLiquid());
         
 	divPhi_ = 
 	(
           - rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal())
-        //   - dRhoMDT()*fvc::DDt(phi_, T())
+          - alphaM_*liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T())
         )/rhoM_;
     }
 
