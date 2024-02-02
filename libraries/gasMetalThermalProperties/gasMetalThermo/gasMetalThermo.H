@@ -88,6 +88,9 @@ class gasMetalThermo
         
         //- Density of all phases
         const scalar rhoSolid_, rhoLiquid_, rhoGas_;
+
+        //- Density change coefficient [1/K]
+        const scalar betaLiquid_;
         
         //- Temperature of melting [K]
         const scalar Tmelting_;
@@ -192,6 +195,12 @@ public:
             dimensionedScalar rhoGas() const
             {
                 return dimensionedScalar("rhoGas", dimDensity, rhoGas_);
+            }
+
+            //- Return density change coefficient [1/K]
+            dimensionedScalar  betaLiquid() const
+            {
+                return dimensionedScalar(" betaLiquid", dimMass/(dimTemperature*dimMass), betaLiquid_);
             }
 
 
