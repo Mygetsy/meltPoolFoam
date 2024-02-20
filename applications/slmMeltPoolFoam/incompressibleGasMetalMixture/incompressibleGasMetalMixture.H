@@ -73,6 +73,9 @@ class incompressibleGasMetalMixture
             //- Critical temperature for metal vapour [K]
             const dimensionedScalar Tcritical_;
 
+            //- Initial mass at system [kg]
+            dimensionedScalar initialMass_;
+
             //- Metal dictionary
             const dictionary metalDict_;
 

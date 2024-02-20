@@ -68,10 +68,13 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
     dRhoMDTSolid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "solid"))),
     dRhoMDTLiquid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "liquid"))),
     rhoM_(volScalarField::New("rhoM", U.mesh(), rho1_)),
+    initialMass_("initialMass", dimMass, 0),
     divPhi_(volScalarField::New("divPhi", U.mesh(), dimensionedScalar(inv(dimTime))))
 		
 {
     const scalar Tmelting = thermo().Tmelting().value();
+    updateRhoM();
+    initialMass_ = fvc::domainIntegrate(rhoM_*alphaM_);
 
     Info<< "Transport properties:" << endl
         << " -- Surface tension at Tmelting = " << sigmaPtr_->value(Tmelting) << endl
@@ -218,11 +221,19 @@ const Foam::volScalarField& Foam::incompressibleGasMetalMixture::divPhi()
 	const dimensionedScalar rhoJump("rhoJump", dimDensity, rhoJump_);
     const dimensionedScalar rhoLiq(thermo().rhoLiquid());
     const dimensionedScalar beta(thermo().betaLiquid());
+
+    const dimensionedScalar deltaTime("deltaTime", dimTime, 1e-5);
+    const dimensionedScalar deltaMass = (fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_)/deltaTime;
+    const dimensionedScalar metalVolume = fvc::domainIntegrate(liquidFraction());
+    const scalar dMdT = (fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_).value();
+
+    Info<<  "Mass correction:= " << dMdT << endl;
         
 	divPhi_ = 
 	(
           - rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal())
           - alphaM_*liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T())
+          - liquidFraction()*deltaMass/(metalVolume + ROOTSMALL*fvc::domainIntegrate(alphaM_))
         )/rhoM_;
     }
 
