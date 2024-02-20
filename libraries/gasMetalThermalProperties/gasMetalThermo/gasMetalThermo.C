@@ -28,8 +28,8 @@ License
 #include "gasMetalThermo.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-Foam::gasMetalThermo::gasMetalThermo(const fvMesh& mesh)
+template<class Mixture>
+Foam::gasMetalThermo::gasMetalThermo(const fvMesh& mesh, const Mixture& mixture)
 :
     IOdictionary
     (
@@ -43,6 +43,11 @@ Foam::gasMetalThermo::gasMetalThermo(const fvMesh& mesh)
         )
     ),
     mesh_(mesh),
+    // mixture_(mixture),
+    rhoSolid_(mixture.subDict("metal").get<scalar>("rhoSolid")),
+    rhoLiquid_(mixture.subDict("metal").get<scalar>("rho")),
+    betaLiquid_(mixture.subDict("metal").get<scalar>("betaLiquid")),
+    rhoGas_(mixture.subDict("gas").get<scalar>("rho")),
     metalDict_(subDict("metal")),
     solidDict_(metalDict_.subDict("solid")),
     liquidDict_(metalDict_.subDict("liquid")),
@@ -51,10 +56,10 @@ Foam::gasMetalThermo::gasMetalThermo(const fvMesh& mesh)
     liquid_(liquidDict_),
     gas_(gasDict_),
     //!TODO: Temporary rhoPhase_ do not know how to read from transport properties here
-    rhoSolid_(metalDict_.get<scalar>("rhoSolid")),
-    rhoLiquid_(metalDict_.get<scalar>("rhoLiquid")),
-    rhoGas_(gasDict_.get<scalar>("rhoGas")),
-    betaLiquid_(metalDict_.get<scalar>("betaLiquid")),
+    // rhoSolid_(metalDict_.get<scalar>("rhoSolid")),
+    // rhoLiquid_(metalDict_.get<scalar>("rhoLiquid")),
+    // rhoGas_(gasDict_.get<scalar>("rhoGas")),
+    // betaLiquid_(metalDict_.get<scalar>("betaLiquid")),
     Tmelting_(metalDict_.get<scalar>("Tmelting")),
     Tboiling_(metalDict_.get<scalar>("Tboiling")),
     Hfusion_(metalDict_.get<scalar>("Hfusion")),

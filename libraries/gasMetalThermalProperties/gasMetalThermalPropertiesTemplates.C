@@ -38,7 +38,7 @@ Foam::gasMetalThermalProperties<Mixture>::gasMetalThermalProperties
     const Mixture& mixture
 )
 :
-    thermo_(mesh),
+    thermo_(mesh, mixture),
     writeAllFields_(mesh.time().controlDict().getOrDefault("writeAllFields", false)),
     solidificationFields_(thermo_.subDict("solidificationFields")),
     enabledSolidification_(solidificationFields_.getOrDefault("enabled", false)),

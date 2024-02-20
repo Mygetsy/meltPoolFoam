@@ -53,7 +53,7 @@ namespace Foam
 /*---------------------------------------------------------------------------*\
                         Class gasMetalThermo Declaration
 \*---------------------------------------------------------------------------*/
-
+template<class Mixture>
 class gasMetalThermo
 :
     public IOdictionary
@@ -79,6 +79,9 @@ class gasMetalThermo
 
         //- Reference to the mesh
         const fvMesh& mesh_;
+
+        //- Reference to the mixture model
+        // const Mixture& mixture_;
 
         //- Dictionaries
         const dictionary metalDict_, solidDict_, liquidDict_, gasDict_;
@@ -128,7 +131,7 @@ class gasMetalThermo
 public:
 
     //- Constructor
-    gasMetalThermo(const fvMesh& mesh);
+    gasMetalThermo(const fvMesh& mesh, const Mixture& mixture);
 
     //- Destructor
     ~gasMetalThermo() = default;
