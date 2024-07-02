@@ -277,7 +277,7 @@ Foam::tmp<T1> Foam::gasMetalThermo::T
                         )*h;
 
             return 
-            mag(A) > SMALL
+            mag(A) > ROOTSMALL
               ? (Foam::sqrt(sqr(B) + 2*A*C) - B)/A
               : C/B;
         },

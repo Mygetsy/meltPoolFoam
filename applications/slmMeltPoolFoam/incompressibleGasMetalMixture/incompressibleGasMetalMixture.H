@@ -82,6 +82,9 @@ class incompressibleGasMetalMixture
             //- Melting density change [kg/m^3]
             const scalar rhoJump_;
 
+            //- Mass coerrection coefficent
+            const scalar massCorrectionCoeff_;
+
             //- Derivative of density w.r.t. temperature [kg/m^3/K]
             const Polynomial<2> dRhoMDTSolid_, dRhoMDTLiquid_;
 

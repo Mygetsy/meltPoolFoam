@@ -16,7 +16,7 @@ fvVectorMatrix UEqn
   + turbulence->divDevRhoReff(rho, U)
   + fvm::Sp(mixture.solidPhaseDamping(), U)
  ==
-    liquidFraction*mixture.marangoniForce()*2*rho/(rho1 + rho2)
+    mixture.liquidFractionInMetal()*mixture.marangoniForce()*2*rho/(rho1 + rho2)
 );
 
 UEqn.relax();

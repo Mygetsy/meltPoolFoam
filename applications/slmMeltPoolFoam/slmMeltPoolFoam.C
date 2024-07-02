@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
             laserHeatSource->correct();
 
             // --- Momentum predictor
-            // #include "UEqn.H"
+             //#include "UEqn.H"
 
             // --- Enthalpy corrector loop
             label nCorrEnthalpy(readLabel(pimple.dict().lookup("nEnthalpyCorrectors")));
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
                 continue;
             }
 
-	    #include "UEqn.H"		
+	        #include "UEqn.H"
             // --- Pressure corrector loop
             while (pimple.correct())
 	    {

@@ -68,15 +68,22 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
     dRhoMDTSolid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "solid"))),
     dRhoMDTLiquid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "liquid"))),
     rhoM_(volScalarField::New("rhoM", U.mesh(), rho1_)),
+<<<<<<< Updated upstream
+=======
+    initialMass_("initialMass", dimMass, 0),
+    massCorrectionCoeff_(metalDict_.get<scalar>("massCorrectionCoeff")),
+>>>>>>> Stashed changes
     divPhi_(volScalarField::New("divPhi", U.mesh(), dimensionedScalar(inv(dimTime))))
-		
+
 {
     const scalar Tmelting = thermo().Tmelting().value();
 
     Info<< "Transport properties:" << endl
         << " -- Surface tension at Tmelting = " << sigmaPtr_->value(Tmelting) << endl
         << " -- Marangoni coefficient at Tmelting = " << dSigmaDT(Tmelting) << endl
-        << " -- Gas density = " << rho2_.value() << endl;
+        << " -- Gas density = " << rho2_.value() << endl
+        << "Mass in metal: " << initialMass_ .value()  << endl;
+
 
     if (quasiIncompressible_)
     {
@@ -223,6 +230,10 @@ const Foam::volScalarField& Foam::incompressibleGasMetalMixture::divPhi()
 	(
           - rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal())
           - alphaM_*liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T())
+<<<<<<< Updated upstream
+=======
+          - massCorrectionCoeff_*liquidFraction()*deltaMass/(metalVolume + ROOTSMALL*fvc::domainIntegrate(alphaM_))
+>>>>>>> Stashed changes
         )/rhoM_;
     }
 
