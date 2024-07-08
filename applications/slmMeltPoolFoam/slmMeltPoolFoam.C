@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
         {
             if (pimple.corr() == pimple.nCorrPIMPLE())
             {
-                reduceTimeStep = true;
+                reduceTimeStep = false;
             }
 
             if (pimple.firstIter() || moveMeshOuterCorrectors)
@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
 
         updatedMass.value()  = fvc::domainIntegrate(rho1 * alpha1).value();
         Info<< "Mass in metal: " << updatedMass.value()  << endl;
-        
+
         #include "updatePassiveFields.H"
         #include "effectiveAbsorptivity.H"
 
@@ -242,11 +242,11 @@ int main(int argc, char *argv[])
         #include "timeConsumption.H"
         runTime.printExecutionTime(Info);
 
-        //if (reduceTimeStep)
-        //{
-            //Info<< "Halve the time step since all PIMPLE iterations were used" << endl;
-            //runTime.setDeltaT(runTime.deltaTValue()/2, false);
-        //}
+        if (reduceTimeStep)
+        {
+          Info<< "Halve the time step since all PIMPLE iterations were used" << endl;
+          runTime.setDeltaT(runTime.deltaTValue()/2, false);
+        }
     }
 
     Info<< "End\n" << endl;
