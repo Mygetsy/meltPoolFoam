@@ -184,15 +184,14 @@ int main(int argc, char *argv[])
 
                 meshUpdateTime = runTime.elapsedCpuTime() - meshUpdateStartTime;
 
-                // Moving reference frame
-                if (MRF->moving())
-                {
-                    MRF->correct();
-                    phi -= MRF->phiRel();
-                }
-
                 // Update position of the laser beam
                 laserHeatSource->update();
+            }
+            // Moving reference frame
+            if (MRF->moving())
+            {
+                MRF->correct();
+                phi -= MRF->phiRel();
             }
 
             // --- Advect alpha field
