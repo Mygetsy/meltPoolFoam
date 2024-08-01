@@ -29,6 +29,7 @@ License
 
 #include "fvc.H"
 #include "constants.H"
+#include "wallFvPatch.H"
 
 #include "generateGeometricField.H"
 #include "updateGeometricField.H"
@@ -81,7 +82,7 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
         << " -- Surface tension at Tmelting = " << sigmaPtr_->value(Tmelting) << endl
         << " -- Marangoni coefficient at Tmelting = " << dSigmaDT(Tmelting) << endl
         << " -- Gas density = " << rho2_.value() << endl
-        << "Mass in metal: " << initialMass_ .value()  << endl;
+        << " -- Mass in metal = " << initialMass_ .value()  << endl;
 
 
     if (quasiIncompressible_)
@@ -165,6 +166,20 @@ Foam::scalar Foam::incompressibleGasMetalMixture::rhoM(scalar Tm, scalar T, scal
     return rho1_.value() - (1 - phi)*rhoJump_ + rho1_.value()*phi*beta*(T - Tm);
 }
 
+Foam::scalar Foam::incompressibleGasMetalMixture::patchsFlowRate() const
+{
+	scalar totalFlux = 0;
+	forAll(phi_.mesh().boundary(), patchID)
+	{
+		if (isA<wallFvPatch>(phi_.mesh().boundary()[patchID]))
+		{ totalFlux += gSum(rhoM_.boundaryField()[patchID]
+				      *alphaM_.boundaryField()[patchID]
+				      *phi_.boundaryField()[patchID]);
+		}
+	}
+
+	return totalFlux;
+}
 
 void Foam::incompressibleGasMetalMixture::updateRhoM()
 {
@@ -222,22 +237,35 @@ const Foam::volScalarField& Foam::incompressibleGasMetalMixture::divPhi()
     if (quasiIncompressible_)
     {
 	const dimensionedScalar rhoJump("rhoJump", dimDensity, rhoJump_);
-    const dimensionedScalar rhoLiq(thermo().rhoLiquid());
-    const dimensionedScalar beta(thermo().betaLiquid());
+        const dimensionedScalar rhoLiq(thermo().rhoLiquid());
+        const dimensionedScalar beta(thermo().betaLiquid());
 
-    const dimensionedScalar deltaTime("deltaTime", dimTime, 1e-5);
-    const dimensionedScalar deltaMass = (fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_)/deltaTime;
-    const dimensionedScalar metalVolume = fvc::domainIntegrate(liquidFraction());
-    const scalar dMdT = (fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_).value();
-
-    Info<<  "Mass correction:= " << dMdT << endl;
+	const dimensionedScalar deltaTime("deltaTime", dimTime, phi_.time().deltaTValue());
+        const dimensionedScalar dMdT = (fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_)/deltaTime;
+        const dimensionedScalar liquidMetalVolume = fvc::domainIntegrate(liquidFraction());
+        const scalar deltaMass = (fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_).value();
         
-	divPhi_ = 
+        const dimensionedScalar fluxBoundary("fluxBoundary", dimMass/dimTime, this->patchsFlowRate());
+        const dimensionedScalar dMdTCorrected = dMdT + fluxBoundary;
+        Info<<  "Mass correction:= " << dMdT.value() << endl;
+        // For Debug
+        Info<<  "Flow rate:= " << fluxBoundary.value() << endl;
+        const dimensionedScalar meshVolume("meshVolume", dimVolume, gSum(phi_.mesh().V()));
+        const scalar liquidFractionPart = liquidFraction().weightedAverage(phi_.mesh().Vsc()).value();
+        const scalar SMALLVOLUME = 1e-5;
+        DebugInfo<<  "Mass diffrence:= " << deltaMass << endl;
+        DebugInfo<<  "Liquid volume:= " << liquidMetalVolume.value() << endl;
+        DebugInfo<<  "Epsilon in correction:= " << SMALLVOLUME << endl;
+        DebugInfo<<  "Liquid fraction part:= " << liquidFraction().weightedAverage(phi_.mesh().Vsc()).value() << endl;
+        DebugInfo<<  "Total volume:= " << gSum(phi_.mesh().V()) << endl;
+
+        divPhi_ =
 	(
-          - rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal())
-          - alphaM_*liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T())
-          - massCorrectionCoeff_*liquidFraction()*deltaMass/(metalVolume + ROOTSMALL*fvc::domainIntegrate(alphaM_))
-        )/rhoM_;
+              - rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal())
+              - alphaM_*liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T())
+              - massCorrectionCoeff_*liquidFraction()*dMdT/
+	        ((liquidFractionPart + SMALLVOLUME)*meshVolume))
+	        /rhoM_;
     }
 
     return divPhi_;

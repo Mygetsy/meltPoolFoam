@@ -114,6 +114,9 @@ class incompressibleGasMetalMixture
         //- Calculates the metal density
         scalar rhoM(scalar Tmelting, scalar T, scalar liquidFraction) const;
 
+	//- Calcualte flow rate in the domain
+	scalar patchsFlowRate() const;
+
         //- Update the metal density
         void updateRhoM();
 
