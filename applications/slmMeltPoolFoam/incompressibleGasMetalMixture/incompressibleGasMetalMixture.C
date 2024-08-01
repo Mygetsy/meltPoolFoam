@@ -66,11 +66,11 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
     metalDict_(subDict("metal")),
     quasiIncompressible_(metalDict_.getOrDefault("quasiIncompressible", false)),
     rhoJump_(rho1_.value() - metalDict_.get<scalar>("rhoSolid")),
+    initialMass_("initialMass", dimMass, 0),
+    massCorrectionCoeff_(metalDict_.get<scalar>("massCorrectionCoeff")),
     dRhoMDTSolid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "solid"))),
     dRhoMDTLiquid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "liquid"))),
     rhoM_(volScalarField::New("rhoM", U.mesh(), rho1_)),
-    initialMass_("initialMass", dimMass, 0),
-    massCorrectionCoeff_(metalDict_.get<scalar>("massCorrectionCoeff")),
     divPhi_(volScalarField::New("divPhi", U.mesh(), dimensionedScalar(inv(dimTime))))
 
 {

@@ -73,9 +73,6 @@ class incompressibleGasMetalMixture
             //- Critical temperature for metal vapour [K]
             const dimensionedScalar Tcritical_;
 
-            //- Initial mass at system [kg]
-            dimensionedScalar initialMass_;
-
             //- Metal dictionary
             const dictionary metalDict_;
 
@@ -84,6 +81,9 @@ class incompressibleGasMetalMixture
 
             //- Melting density change [kg/m^3]
             const scalar rhoJump_;
+
+            //- Initial mass at system [kg]
+            dimensionedScalar initialMass_;
 
             //- Mass coerrection coefficent
             const scalar massCorrectionCoeff_;
