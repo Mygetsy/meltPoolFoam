@@ -53,7 +53,10 @@ while (pimple.correctNonOrthogonal())
     if (pimple.finalNonOrthogonalIter())
     {
         phi = phiHbyA - p_rghEqn.flux();
-
+	if (MRF->moving())
+            {
+                phi -= MRF->phiRel();
+            }
         p_rgh.relax();
 
         U = HbyA + rAU()*fvc::reconstruct((phig - p_rghEqn.flux())/rAUf);

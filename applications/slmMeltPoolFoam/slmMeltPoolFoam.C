@@ -187,11 +187,10 @@ int main(int argc, char *argv[])
                 // Update position of the laser beam
                 laserHeatSource->update();
             }
-            // Moving reference frame
+            // Moving reference frame, phi correction in pEqn.H
             if (MRF->moving())
             {
                 MRF->correct();
-                phi -= MRF->phiRel();
             }
 
             // --- Advect alpha field
