@@ -87,6 +87,18 @@ class incompressibleGasMetalMixture
 
             //- Mass coerrection coefficent
             const scalar massCorrectionCoeff_;
+	    
+	    //- Compressibility coef for solid [1/Pa]
+	    const dimensionedScalar theta_solid_;
+	    
+	    //- Compressibility coef for liquid [1/Pa]
+	    const dimensionedScalar theta_liquid_;
+
+	    //- Mass of metal from thermal reasons [kg]
+	    dimensionedScalar thermalMass_;
+	       
+	    //- Mass of metal from comperssibility reasons [kg/Pa]
+            dimensionedScalar compressMass_;
 
             //- Derivative of density w.r.t. temperature [kg/m^3/K]
             const Polynomial<2> dRhoMDTSolid_, dRhoMDTLiquid_;

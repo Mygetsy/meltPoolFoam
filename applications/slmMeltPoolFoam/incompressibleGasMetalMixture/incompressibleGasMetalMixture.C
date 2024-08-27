@@ -68,6 +68,10 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
     rhoJump_(rho1_.value() - metalDict_.get<scalar>("rhoSolid")),
     initialMass_("initialMass", dimMass, 0),
     massCorrectionCoeff_(metalDict_.get<scalar>("massCorrectionCoeff")),
+    theta_solid_("theta_solid", dimArea/dimForce, metalDict_.get<scalar>("theta_solid")),
+    theta_liquid_("theta_liquid", dimArea/dimForce, metalDict_.get<scalar>("theta_liquid")),
+    thermalMass_("thermalMass",dimMass, 0),
+    compressMass_("compressMass",dimMass/dimPressure, 0),
     dRhoMDTSolid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "solid"))),
     dRhoMDTLiquid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "liquid"))),
     rhoM_(volScalarField::New("rhoM", U.mesh(), rho1_)),
@@ -91,6 +95,8 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
         T().oldTime();
         liquidFraction().oldTime();
         liquidFractionInMetal().oldTime();
+	thermalMass_.oldTime();
+	compressMass_.oldTime();
 
         Info<< " -- Liquid metal density at " << Tmelting + 1000 << " = "
             << rhoM(Tmelting, Tmelting + 1000, 1) << endl
@@ -238,7 +244,14 @@ const Foam::volScalarField& Foam::incompressibleGasMetalMixture::divPhi()
     {
 	const dimensionedScalar rhoJump("rhoJump", dimDensity, rhoJump_);
         const dimensionedScalar rhoLiq(thermo().rhoLiquid());
+	const dimensionedScalar rhoSol(thermo().rhoSolid());
         const dimensionedScalar beta(thermo().betaLiquid());
+	
+	thermalMass_ = fvc::domainIntegrate(rhoM_*alphaM_);
+	comperssMass_ = rhoL*thetaLiquid*fvc::domainIntegrate(liquidFraction()) 
+			+ rhoS*thetaSolid*fvc::domainIntegrate(alphaM_ - liquidFraction());
+
+	const dimensionedScalar pressure_diff = -(thermalMass_ - initialMass_)/comperssMass_; 
 
 	const dimensionedScalar deltaTime("deltaTime", dimTime, phi_.time().deltaTValue());
         const dimensionedScalar dMdT = (fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_)/deltaTime;
@@ -259,6 +272,17 @@ const Foam::volScalarField& Foam::incompressibleGasMetalMixture::divPhi()
         DebugInfo<<  "Liquid fraction part:= " << liquidFraction().weightedAverage(phi_.mesh().Vsc()).value() << endl;
         DebugInfo<<  "Total volume:= " << gSum(phi_.mesh().V()) << endl;
 
+	const dimensionedScalar dPstdt = -(fvc::ddt(thermalMass_) + pressure_diff*fvc::ddt(comressMass_))/compessMass_; 
+
+        const volScalarField densityChangePhaseTransition = rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal());
+	const volScalarField densityChangeThermalExpansion = alphaM_*liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T());
+	const volScalarField densityChangeHydrostaticPressure = (liquidFraction()*rhoLiq*thetaLiquid
+								+ (alphaM_ - liquidFraction())*rhoSol*thetaSolid)*dPstdt; 
+	
+	const volScalarField hydrostaticRhoM = rhoM_ + hydrostatic part;
+
+	divPhi_ = -(densityChangePhaseTransition + densityChangeThermalExpansion + densityChangeHydrostaticPressure)/ hydrostaticRhoM;
+	
         divPhi_ =
 	(
               - rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal())
