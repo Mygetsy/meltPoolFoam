@@ -38,13 +38,13 @@ License
 
 namespace Foam
 {
-    defineTypeNameAndDebug(incompressibleGasMetalMixture, 0);
+    defineTypeNameAndDebug(incompressibleGasMetalMixture, 1);
 
     defineTemplateTypeNameAndDebugWithName
     (
         gasMetalThermalProperties<incompressibleGasMetalMixture>,
         "incompressibleGasMetalThermalProperties",
-        0
+        1
     );
 }
 
@@ -68,10 +68,12 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
     rhoJump_(rho1_.value() - metalDict_.get<scalar>("rhoSolid")),
     initialMass_("initialMass", dimMass, 0),
     massCorrectionCoeff_(metalDict_.get<scalar>("massCorrectionCoeff")),
-    theta_solid_("theta_solid", dimArea/dimForce, metalDict_.get<scalar>("theta_solid")),
-    theta_liquid_("theta_liquid", dimArea/dimForce, metalDict_.get<scalar>("theta_liquid")),
-    thermalMass_("thermalMass",dimMass, 0),
-    compressMass_("compressMass",dimMass/dimPressure, 0),
+    thetaSol_("thetaSol", dimArea/dimForce, metalDict_.get<scalar>("thetaSol")),
+    thetaLiq_("thetaLiq", dimArea/dimForce, metalDict_.get<scalar>("thetaLiq")),
+    thermalMass_("thermalMass", dimMass, 0),
+    thermalMassOldTime_("thermalMassOld", dimMass, 0),
+    compressMass_("compressMass", dimMass/dimPressure, 0),
+    compressMassOldTime_("compressMassOld", dimMass/dimPressure, 0),
     dRhoMDTSolid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "solid"))),
     dRhoMDTLiquid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "liquid"))),
     rhoM_(volScalarField::New("rhoM", U.mesh(), rho1_)),
@@ -95,8 +97,9 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
         T().oldTime();
         liquidFraction().oldTime();
         liquidFractionInMetal().oldTime();
-	thermalMass_.oldTime();
-	compressMass_.oldTime();
+
+        thermalMass_ = fvc::domainIntegrate(rhoM_*alphaM_);
+	    thermalMassOldTime_.value() = thermalMass_.value();
 
         Info<< " -- Liquid metal density at " << Tmelting + 1000 << " = "
             << rhoM(Tmelting, Tmelting + 1000, 1) << endl
@@ -242,54 +245,68 @@ const Foam::volScalarField& Foam::incompressibleGasMetalMixture::divPhi()
 {
     if (quasiIncompressible_)
     {
-	const dimensionedScalar rhoJump("rhoJump", dimDensity, rhoJump_);
+	    const dimensionedScalar rhoJump("rhoJump", dimDensity, rhoJump_);
         const dimensionedScalar rhoLiq(thermo().rhoLiquid());
-	const dimensionedScalar rhoSol(thermo().rhoSolid());
+	    const dimensionedScalar rhoSol(thermo().rhoSolid());
         const dimensionedScalar beta(thermo().betaLiquid());
-	
-	thermalMass_ = fvc::domainIntegrate(rhoM_*alphaM_);
-	comperssMass_ = rhoL*thetaLiquid*fvc::domainIntegrate(liquidFraction()) 
-			+ rhoS*thetaSolid*fvc::domainIntegrate(alphaM_ - liquidFraction());
 
-	const dimensionedScalar pressure_diff = -(thermalMass_ - initialMass_)/comperssMass_; 
+        const dimensionedScalar SMALLCOMPERSSMASS("SMALLCOMPERSSMASS", dimMass/dimPressure, 1e-8);
+	    thermalMass_ = fvc::domainIntegrate(rhoM_*alphaM_);
+	    compressMass_ = max(rhoLiq*thetaLiq_*fvc::domainIntegrate(liquidFraction())
+			+ rhoSol*thetaSol_*fvc::domainIntegrate(alphaM_ - liquidFraction()), SMALLCOMPERSSMASS);
 
-	const dimensionedScalar deltaTime("deltaTime", dimTime, phi_.time().deltaTValue());
+	    const dimensionedScalar pressure_diff = -(thermalMass_ - initialMass_)/compressMass_;
+        DebugInfo<<  "compressMassxPressureDiff: " << (pressure_diff*compressMass_).value() << endl;
+        DebugInfo<<  "compressMass_: " << compressMass_.value() << endl;
+        DebugInfo<<  "thermalMass_: " << thermalMass_.value() << endl;
+        DebugInfo<<  "initialMass_: " << initialMass_.value() << endl;
+
+	    const dimensionedScalar deltaTime("deltaTime", dimTime, phi_.time().deltaTValue());
         const dimensionedScalar dMdT = (fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_)/deltaTime;
         const dimensionedScalar liquidMetalVolume = fvc::domainIntegrate(liquidFraction());
-        const scalar deltaMass = (fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_).value();
-        
+        const scalar deltaMass = (thermalMass_ - initialMass_).value();
+
         const dimensionedScalar fluxBoundary("fluxBoundary", dimMass/dimTime, this->patchsFlowRate());
         const dimensionedScalar dMdTCorrected = dMdT + fluxBoundary;
-        Info<<  "Mass correction:= " << dMdT.value() << endl;
+        //Info<<  "Mass correction:= " << dMdT.value() << endl;
         // For Debug
-        Info<<  "Flow rate:= " << fluxBoundary.value() << endl;
+        //Info<<  "Flow rate:= " << fluxBoundary.value() << endl;
         const dimensionedScalar meshVolume("meshVolume", dimVolume, gSum(phi_.mesh().V()));
         const scalar liquidFractionPart = liquidFraction().weightedAverage(phi_.mesh().Vsc()).value();
         const scalar SMALLVOLUME = 1e-5;
         DebugInfo<<  "Mass diffrence:= " << deltaMass << endl;
         DebugInfo<<  "Liquid volume:= " << liquidMetalVolume.value() << endl;
-        DebugInfo<<  "Epsilon in correction:= " << SMALLVOLUME << endl;
+        //DebugInfo<<  "Epsilon in correction:= " << SMALLVOLUME << endl;
         DebugInfo<<  "Liquid fraction part:= " << liquidFraction().weightedAverage(phi_.mesh().Vsc()).value() << endl;
         DebugInfo<<  "Total volume:= " << gSum(phi_.mesh().V()) << endl;
 
-	const dimensionedScalar dPstdt = -(fvc::ddt(thermalMass_) + pressure_diff*fvc::ddt(comressMass_))/compessMass_; 
+        const dimensionedScalar ddtThermalMass = (thermalMass_ - thermalMassOldTime_)/deltaTime;
+        DebugInfo<<  "ddtThermalMass: " << ddtThermalMass.value() << endl;
+        const dimensionedScalar ddtCompressMass = (compressMass_ - compressMassOldTime_)/deltaTime;
+        DebugInfo<<  "ddtCompressMass: " << ddtCompressMass.value() << endl;
+	    const dimensionedScalar dPstdt = -(ddtThermalMass + pressure_diff*ddtCompressMass)/compressMass_;
+        DebugInfo<<  "dPstdt: " << dPstdt.value() << endl;
 
-        const volScalarField densityChangePhaseTransition = rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal());
-	const volScalarField densityChangeThermalExpansion = alphaM_*liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T());
-	const volScalarField densityChangeHydrostaticPressure = (liquidFraction()*rhoLiq*thetaLiquid
-								+ (alphaM_ - liquidFraction())*rhoSol*thetaSolid)*dPstdt; 
-	
-	const volScalarField hydrostaticRhoM = rhoM_ + hydrostatic part;
+        const volScalarField densityChangePhaseTransition = (rhoJump
+                                                             + (rhoLiq*thetaLiq_ - rhoSol*thetaSol_)*pressure_diff
+                                                            )*alphaM_*fvc::DDt(phi_, liquidFractionInMetal());
+	    const volScalarField densityChangeThermalExpansion = alphaM_*liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T());
+	    const volScalarField densityChangeHydrostaticPressure = (liquidFraction()*rhoLiq*thetaLiq_
+								+ (alphaM_ - liquidFraction())*rhoSol*thetaSol_)*dPstdt;
 
-	divPhi_ = -(densityChangePhaseTransition + densityChangeThermalExpansion + densityChangeHydrostaticPressure)/ hydrostaticRhoM;
-	
-        divPhi_ =
-	(
-              - rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal())
-              - alphaM_*liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T())
-              - massCorrectionCoeff_*liquidFraction()*dMdT/
-	        ((liquidFractionPart + SMALLVOLUME)*meshVolume))
-	        /rhoM_;
+        const volScalarField rhoMHydrostatic = liquidFractionInMetal()*thetaLiq_*rhoLiq +
+                                                  (1 - liquidFractionInMetal())*thetaSol_*rhoSol;
+    	const volScalarField hydrostaticRhoM = rhoM_ + rhoMHydrostatic*pressure_diff;
+
+	    divPhi_ = -(densityChangePhaseTransition + densityChangeThermalExpansion + densityChangeHydrostaticPressure)/hydrostaticRhoM;
+
+        // divPhi_ =
+	    //      (
+        //       - rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal())
+        //       - alphaM_*liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T())
+        //       - massCorrectionCoeff_*liquidFraction()*dMdT/
+	    //     ((liquidFractionPart + SMALLVOLUME)*meshVolume))
+	    //     /rhoM_;
     }
 
     return divPhi_;
@@ -314,6 +331,12 @@ void Foam::incompressibleGasMetalMixture::correctThermo()
     {
         updateRhoM();
     }
+}
+
+void Foam::incompressibleGasMetalMixture::storePrevMassValues()
+{
+    thermalMassOldTime_ = thermalMass_;
+    compressMassOldTime_ = compressMass_;
 }
 
 

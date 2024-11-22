@@ -87,18 +87,24 @@ class incompressibleGasMetalMixture
 
             //- Mass coerrection coefficent
             const scalar massCorrectionCoeff_;
-	    
-	    //- Compressibility coef for solid [1/Pa]
-	    const dimensionedScalar theta_solid_;
-	    
-	    //- Compressibility coef for liquid [1/Pa]
-	    const dimensionedScalar theta_liquid_;
 
-	    //- Mass of metal from thermal reasons [kg]
-	    dimensionedScalar thermalMass_;
-	       
-	    //- Mass of metal from comperssibility reasons [kg/Pa]
-            dimensionedScalar compressMass_;
+	        //- Compressibility coef for solid [1/Pa]
+	        const dimensionedScalar thetaSol_;
+
+	        //- Compressibility coef for liquid [1/Pa]
+	        const dimensionedScalar thetaLiq_;
+
+	        //- Mass of metal from thermal reasons [kg]
+	        dimensionedScalar thermalMass_;
+
+	        //- Mass of metal from thermal reasons at previous time step [kg]
+	        dimensionedScalar thermalMassOldTime_;
+
+	        //- Mass of metal from comperssibility reasons [kg/Pa]
+                dimensionedScalar compressMass_;
+
+	        //- Mass of metal from comperssibility reasons at previous time step [kg/Pa]
+            dimensionedScalar compressMassOldTime_;
 
             //- Derivative of density w.r.t. temperature [kg/m^3/K]
             const Polynomial<2> dRhoMDTSolid_, dRhoMDTLiquid_;
@@ -126,8 +132,8 @@ class incompressibleGasMetalMixture
         //- Calculates the metal density
         scalar rhoM(scalar Tmelting, scalar T, scalar liquidFraction) const;
 
-	//- Calcualte flow rate in the domain
-	scalar patchsFlowRate() const;
+	    //- Calcualte flow rate in the domain
+	    scalar patchsFlowRate() const;
 
         //- Update the metal density
         void updateRhoM();
@@ -181,6 +187,9 @@ public:
 
             //- Correct enthalpy-dependent fields
             void correctThermo() override;
+
+            //- Update oldTime scalars for time derivatives
+            void storePrevMassValues();
 };
 
 

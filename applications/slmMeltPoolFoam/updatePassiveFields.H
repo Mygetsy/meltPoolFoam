@@ -1,6 +1,7 @@
 wasMelted = Foam::max(wasMelted, liquidFraction);
 
 mixture.correctPassiveFields();
+mixture.storePrevMassValues();
 
 if (writeAllFields)
 {
