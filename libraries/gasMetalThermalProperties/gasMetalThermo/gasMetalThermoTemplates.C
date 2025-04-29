@@ -103,7 +103,10 @@ Foam::tmp<T1> Foam::gasMetalThermo::kappa
         dimPower/dimLength/dimTemperature,
         [this](scalar T, scalar phi, scalar alphaG)
         {
-            return gasMetalAverage(gas_.kappa, liquid_.kappa, solid_.kappa, T, phi, alphaG);
+            scalar alphaM = 1 - alphaG;
+
+            return alphaG*gas_.kappa.value(T)
+                   + alphaM*( T <= Tmelting_ ? solid_.kappa.value(T) : liquid_.kappa.value(T));
         },
         T, liquidFraction, gasFraction
     );

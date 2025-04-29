@@ -256,7 +256,8 @@ void Foam::gasMetalThermalProperties<Mixture>::calcMetalFractions()
 
     const volScalarField h_m = (rho1h1 + rho2h2)/(rho1 + rho2);
 
-    const volScalarField sigmoidArgument = (h_ - h_m)*sqr((rho1 + rho2))/(4*rho1*rho2*(rho2h2/rho2 - rho1h1/rho1 + h_m*ROOTVSMALL));
+    //const volScalarField sigmoidArgument = (h_ - h_m)*sqr((rho1 + rho2))/(4*rho1*rho2*(rho2h2/rho2 - rho1h1/rho1 + h_m*ROOTVSMALL));
+    const volScalarField sigmoidArgument = (rho1*h_ - rho1h1)/(rho1*h_ - rho1h1 + rho2h2 - rho2*h_ + rho1*h_m*ROOTVSMALL) - 0.5;
 
 
     // liquidFractionInMetal_ = thermo_.sigmoid().value(sigmoidArgument); //!TODO: May be delete

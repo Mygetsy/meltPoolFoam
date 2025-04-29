@@ -59,7 +59,7 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
 :
     immiscibleIncompressibleTwoPhaseMixture(U, phi),
     gasMetalThermalProperties(U.mesh(), *this),
-    sigmaPtr_(Function1<scalar>::New("sigma", this->subDict("sigma"))),
+    sigmaPtr_(Function1<scalar>::New("sigma", this->subDict("sigma"), &U.mesh())),
     mushyCoeff_("mushyCoeff", dimDensity/dimTime, *this),
     qMushyCoeff_("qMushyCoeff", dimless, *this),
     Tcritical_("Tcritical", dimTemperature, thermo().subDict("metal")),
