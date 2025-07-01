@@ -184,11 +184,11 @@ Foam::gasMetalThermalProperties<Mixture>::gasMetalThermalProperties
         do
         {
             h_.storePrevIter();
-            h_ = thermo_.h(T_, liquidFraction_, alphaG_);
+            h_ == thermo_.h(T_, liquidFraction_, alphaG_);
             calcMetalFractions();
 
             const volScalarField residualField = mag(h_ - h_.prevIter());
-            residual = gMax(residualField);
+            residual = max(gMax(residualField), gMax(residualField.boundaryField()));
 
             DebugInfo << " -- residual = " << residual << ", iteration = " << nIter + 1 << endl;
         }
@@ -301,6 +301,8 @@ void Foam::gasMetalThermalProperties<Mixture>::correctThermo()
     Cp_ = thermo_.Cp(T_, liquidFraction_, alphaG_);
     kappa_ = thermo_.kappa(T_, liquidFraction_, alphaG_);
     HsPrimeAlphaG_ = thermo_.HsPrimeAlphaG(T_);
+
+    h_ == thermo_.h(T_, liquidFraction_, alphaG_);
 
     updatedRedistribution_ = false;
     updatedGradT_ = false;
