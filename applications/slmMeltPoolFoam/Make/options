@@ -5,6 +5,7 @@ EXE_INC = \
     -I../../libraries/sigmoidFunction/lnInclude \
     -I../../libraries/laserHeatSource/lnInclude \
     -I../../libraries/movingReferenceFrame/lnInclude \
+    -I../../libraries/TwoPhaseFlowModel/surfaceForces/lnInclude \
     -I./surfaceLaserHeatSources/lnInclude \
     -I$(FOAM_SOLVERS)/multiphase/interIsoFoam \
     -I$(FOAM_SOLVERS)/multiphase/interFoam \
@@ -39,4 +40,6 @@ EXE_LIBS = \
     -llaserHeatSource \
     -lsurfaceLaserHeatSources \
     -ltrueArrhenius \
-    -lmovingReferenceFrame
+    -lmovingReferenceFrame \
+    -lsurfaceForces
+

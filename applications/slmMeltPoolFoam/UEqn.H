@@ -21,6 +21,7 @@ fvVectorMatrix UEqn
 
 UEqn.relax();
 
+
 if (pimple.momentumPredictor())
 {
     solve
@@ -31,7 +32,7 @@ if (pimple.momentumPredictor())
         (
             (
                 (
-                    mixture.surfaceTensionForce()
+                    surfForces.surfaceTensionForce()
                   + recoilPressure
                 )
               - ghf*fvc::snGrad(rhok)

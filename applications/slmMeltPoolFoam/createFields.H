@@ -209,6 +209,21 @@ autoPtr<incompressible::turbulenceModel> turbulence
     incompressible::turbulenceModel::New(U, phi, mixture)
 );
 
+// Implementation of surface tension models from TwoPhaseFlow solver
+IOdictionary transportProperties
+(
+    IOobject
+    (
+        "transportProperties",
+        U.time().constant(),
+        U.db(),
+        IOobject::MUST_READ_IF_MODIFIED,
+        IOobject::NO_WRITE
+    )
+);
+
+surfaceForces surfForces(alpha1,phi,U,transportProperties);
+
 // Thermal expansion coefficient [1/K]
 dimensionedScalar beta
 (
