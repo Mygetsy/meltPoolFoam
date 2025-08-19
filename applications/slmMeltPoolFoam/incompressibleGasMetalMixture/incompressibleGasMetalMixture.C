@@ -71,9 +71,7 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
     quasiIncompressible_(metalDict_.getOrDefault("quasiIncompressible", false)),
     rhoJump_(rho1_.value() - metalDict_.get<scalar>("rhoSolid")),
     initialMass_("initialMass", dimMass, 0),
-    massCorrectionCoeff_(metalDict_.get<scalar>("massCorrectionCoeff")),
-    dRhoMDTSolid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "solid"))),
-    dRhoMDTLiquid_(metalDict_.lookup(IOobject::groupName("dRhoDT", "liquid"))),
+    tauCorr_("tauCorr",dimTime, metalDict_.get<scalar>("tauCorr")),
     rhoM_(volScalarField::New("rhoM", U.mesh(), rho1_)),
     divPhi_(volScalarField::New("divPhi", U.mesh(), dimensionedScalar(inv(dimTime))))
 
@@ -142,24 +140,6 @@ Foam::tmp<Foam::volScalarField> Foam::incompressibleGasMetalMixture::dSigmaDT() 
             return dSigmaDT(T);
         },
         T()
-    );
-}
-
-
-Foam::tmp<Foam::volScalarField> Foam::incompressibleGasMetalMixture::dRhoMDT() const
-{
-    const scalar Tm = thermo().Tmelting().value();
-
-    return generateGeometricField<volScalarField>
-    (
-        "dRhoMDT",
-        T().mesh(),
-        dimDensity/dimTemperature,
-        [this, Tm](scalar T, scalar phi)
-        {
-            return T <= Tm ? dRhoMDTSolid_.value(T) : dRhoMDTLiquid_.value(T);
-        },
-        T(), liquidFraction()
     );
 }
 
@@ -245,36 +225,25 @@ const Foam::volScalarField& Foam::incompressibleGasMetalMixture::divPhi()
 {
     if (quasiIncompressible_)
     {
-	const dimensionedScalar rhoJump("rhoJump", dimDensity, rhoJump_);
+	    const dimensionedScalar rhoJump("rhoJump", dimDensity, rhoJump_);
         const dimensionedScalar rhoLiq(thermo().rhoLiquid());
         const dimensionedScalar beta(thermo().betaLiquid());
 
-	const dimensionedScalar deltaTime("deltaTime", dimTime, phi_.time().deltaTValue());
-        const dimensionedScalar dMdT = (fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_)/deltaTime;
-        const dimensionedScalar liquidMetalVolume = fvc::domainIntegrate(liquidFraction());
-        const scalar deltaMass = (fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_).value();
-        
-        const dimensionedScalar fluxBoundary("fluxBoundary", dimMass/dimTime, this->patchsFlowRate());
-        const dimensionedScalar dMdTCorrected = dMdT + fluxBoundary;
-        Info<<  "Mass correction:= " << dMdT.value() << endl;
-        // For Debug
-        Info<<  "Flow rate:= " << fluxBoundary.value() << endl;
         const dimensionedScalar meshVolume("meshVolume", dimVolume, gSum(phi_.mesh().V()));
         const scalar liquidFractionPart = liquidFraction().weightedAverage(phi_.mesh().Vsc()).value();
         const scalar SMALLVOLUME = 1e-5;
-        DebugInfo<<  "Mass diffrence:= " << deltaMass << endl;
-        DebugInfo<<  "Liquid volume:= " << liquidMetalVolume.value() << endl;
-        DebugInfo<<  "Epsilon in correction:= " << SMALLVOLUME << endl;
-        DebugInfo<<  "Liquid fraction part:= " << liquidFraction().weightedAverage(phi_.mesh().Vsc()).value() << endl;
-        DebugInfo<<  "Total volume:= " << gSum(phi_.mesh().V()) << endl;
 
-        divPhi_ =
-	(
-              - rhoJump*alphaM_*fvc::DDt(phi_, liquidFractionInMetal())
-              - alphaM_*liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T())
-              - massCorrectionCoeff_*liquidFraction()*dMdT/
-	        ((liquidFractionPart + SMALLVOLUME)*meshVolume))
-	        /rhoM_;
+        const dimensionedScalar massChange = fvc::domainIntegrate(rhoM_*alphaM_) - initialMass_;
+        const dimensionedScalar rhoCorr = massChange/((liquidFractionPart + SMALLVOLUME)*meshVolume);
+        const dimensionedScalar dotRhoCorr = rhoCorr/tauCorr_;
+
+        Info << "Density correction = " << rhoCorr.value() << endl;
+
+        divPhi_ = alphaM_*(
+                       - rhoJump*fvc::DDt(phi_, liquidFractionInMetal())
+                       - liquidFractionInMetal()*beta*rhoLiq*fvc::DDt(phi_, T())
+                       - liquidFractionInMetal()*dotRhoCorr
+                       )/rhoM_;
     }
 
     return divPhi_;

@@ -60,13 +60,15 @@ class incompressibleGasMetalMixture
 {
     // Private data
 
-        // Constants
+        // Pointers
+
+            //- Surface tension from TwoPhase Flow of Scheufler and Roenby 2023
+            autoPtr<surfaceForces> surfForcesPtr_;
 
             //- Surface tension as a function of temperature [J/m^2]
             autoPtr<Function1<scalar>> sigmaPtr_;
 
-            //- Surface tension from TwoPhase Flow of Scheufler and Roenby 2023
-            autoPtr<surfaceForces> surfForcesPtr_;
+        // Constants
 
             //- Coefficient related to the permeability of mushy layer [kg/m^3/s]
             const dimensionedScalar mushyCoeff_;
@@ -89,11 +91,8 @@ class incompressibleGasMetalMixture
             //- Initial mass at system [kg]
             dimensionedScalar initialMass_;
 
-            //- Mass coerrection coefficent
-            const scalar massCorrectionCoeff_;
-
-            //- Derivative of density w.r.t. temperature [kg/m^3/K]
-            const Polynomial<2> dRhoMDTSolid_, dRhoMDTLiquid_;
+            //- Characteristic mass correction time [s]
+            const dimensionedScalar tauCorr_;
 
 
         // Fields
@@ -112,9 +111,6 @@ class incompressibleGasMetalMixture
 
         //- Returns the Marangoni coefficient [J/m^2/K]
         tmp<volScalarField> dSigmaDT() const;
-
-        //- Returns the derivative of density w.r.t. temperature [kg/m^3/K]
-        tmp<volScalarField> dRhoMDT() const;
 
         //- Calculates the metal density
         scalar rhoM(scalar Tmelting, scalar T, scalar liquidFraction) const;
