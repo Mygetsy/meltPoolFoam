@@ -27,7 +27,7 @@ surfaceScalarField phig
 (
     (
         (
-          surfForces.surfaceTensionForce()
+          mixture.surfaceTensionForce()
           + recoilPressure
         )*rAUf
       - ghf*fvc::snGrad(rhok)*rAUf

@@ -50,8 +50,6 @@ Description
 #include "incompressibleGasMetalMixture.H"
 #include "surfaceLaserHeatSource.H"
 #include "movingReferenceFrame.H"
-#include "fvcSmooth.H"
-#include "surfaceForces.H"
 
 
 // For debug
@@ -146,7 +144,6 @@ int main(int argc, char *argv[])
                         // We have to update the alpha-dependent fields
                         mixture.correct();
                         mixture.correctThermo();
-                        surfForces.correct();
 
                         // Need for ddt in correctPassiveFields() and mixture.divPhi()
                         const std::vector<std::reference_wrapper<const volScalarField>> fields
@@ -202,7 +199,6 @@ int main(int argc, char *argv[])
 
             mixture.correct();  // update mixture.gradAlpha needed for laserHeatSource
             mixture.correctThermo(); // update liquid fraction
-            surfForces.correct();
 
             laserHeatSource->correct();
 

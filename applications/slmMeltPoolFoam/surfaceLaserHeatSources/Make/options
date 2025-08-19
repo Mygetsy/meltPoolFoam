@@ -1,5 +1,6 @@
 EXE_INC = \
     -I../../../src \
+    -I../../../libraries/TwoPhaseFlowModel/surfaceForces/lnInclude \
     -I../../../libraries/laserHeatSource/lnInclude \
     -I../../../libraries/gasMetalThermalProperties/lnInclude \
     -I../../../libraries/sigmoidFunction/lnInclude \
@@ -26,4 +27,5 @@ EXE_LIBS = \
     -llagrangian \
     -L$(FOAM_USER_LIBBIN) \
     -llaserHeatSource \
-    -lincompressibleGasMetalMixture
+    -lincompressibleGasMetalMixture \
+    -lsurfaceForces

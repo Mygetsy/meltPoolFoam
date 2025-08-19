@@ -2,6 +2,7 @@ EXE_INC = \
     -I../../../src \
     -I../../../libraries/gasMetalThermalProperties/lnInclude \
     -I../../../libraries/sigmoidFunction/lnInclude \
+    -I../../../libraries/TwoPhaseFlowModel/surfaceForces/lnInclude \
     -I$(LIB_SRC)/transportModels/twoPhaseMixture/lnInclude \
     -I$(LIB_SRC)/transportModels \
     -I$(LIB_SRC)/transportModels/incompressible/lnInclude \
@@ -14,4 +15,5 @@ LIB_LIBS = \
     -limmiscibleIncompressibleTwoPhaseMixture \
     -lfiniteVolume \
     -L$(FOAM_USER_LIBBIN) \
-    -lgasMetalThermalProperties
+    -lgasMetalThermalProperties \
+    -lsurfaceForces

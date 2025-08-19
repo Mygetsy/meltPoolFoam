@@ -34,6 +34,9 @@ License
 #include "generateGeometricField.H"
 #include "updateGeometricField.H"
 
+#include "fvcSmooth.H"
+#include "surfaceForces.H"
+
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
@@ -59,7 +62,8 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
 :
     immiscibleIncompressibleTwoPhaseMixture(U, phi),
     gasMetalThermalProperties(U.mesh(), *this),
-    sigmaPtr_(Function1<scalar>::New("sigma", this->subDict("sigma"), &U.mesh())),
+    surfForcesPtr_(autoPtr<surfaceForces>::New(alphaM_,phi,U,*this)),
+    sigmaPtr_(Function1<scalar>::New("sigma", this->subDict("surfaceForces").subDict("sigma"), &U.mesh())),
     mushyCoeff_("mushyCoeff", dimDensity/dimTime, *this),
     qMushyCoeff_("qMushyCoeff", dimless, *this),
     Tcritical_("Tcritical", dimTemperature, thermo().subDict("metal")),
@@ -197,10 +201,15 @@ void Foam::incompressibleGasMetalMixture::updateRhoM()
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+Foam::tmp<Foam::surfaceScalarField>  Foam::incompressibleGasMetalMixture::surfaceTensionForce()
+{
+    return surfForcesPtr_->surfaceTensionForce();
+}
+
 
 Foam::tmp<Foam::volVectorField> Foam::incompressibleGasMetalMixture::marangoniForce() const
 {
-    const volVectorField normal(fvc::reconstruct(nHatf()));
+    const volVectorField normal(fvc::reconstruct(surfForcesPtr_->nHatf()));
     const volTensorField I_nn(tensor::I - sqr(normal));
 
     const volVectorField& gradAlphaM = gasMetalThermalProperties::gradAlphaM();
@@ -279,6 +288,7 @@ void Foam::incompressibleGasMetalMixture::correct()
     immiscibleIncompressibleTwoPhaseMixture::correct();
     // gasMetalThermalProperties -> hAtMelting, gradAlphaM
     gasMetalThermalProperties::correct();
+    surfForcesPtr_->correct();
 }
 
 

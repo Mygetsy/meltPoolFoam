@@ -42,6 +42,7 @@ SourceFiles
 #include "Polynomial.H"
 
 #include "gasMetalThermalProperties.H"
+#include "surfaceForces.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -63,6 +64,9 @@ class incompressibleGasMetalMixture
 
             //- Surface tension as a function of temperature [J/m^2]
             autoPtr<Function1<scalar>> sigmaPtr_;
+
+            //- Surface tension from TwoPhase Flow of Scheufler and Roenby 2023
+            autoPtr<surfaceForces> surfForcesPtr_;
 
             //- Coefficient related to the permeability of mushy layer [kg/m^3/s]
             const dimensionedScalar mushyCoeff_;
@@ -90,6 +94,7 @@ class incompressibleGasMetalMixture
 
             //- Derivative of density w.r.t. temperature [kg/m^3/K]
             const Polynomial<2> dRhoMDTSolid_, dRhoMDTLiquid_;
+
 
         // Fields
 
@@ -145,6 +150,9 @@ public:
     // Member Functions
 
         // Evaluation
+
+            //- Return the surface tension force [N/m^3]
+            tmp<surfaceScalarField> surfaceTensionForce();
 
             //- Return the thermal Marangoni force [N/m^3]
             tmp<volVectorField> marangoniForce() const;

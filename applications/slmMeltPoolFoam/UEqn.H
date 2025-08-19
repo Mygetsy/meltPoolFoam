@@ -32,7 +32,7 @@ if (pimple.momentumPredictor())
         (
             (
                 (
-                    surfForces.surfaceTensionForce()
+                    mixture.surfaceTensionForce()
                   + recoilPressure
                 )
               - ghf*fvc::snGrad(rhok)

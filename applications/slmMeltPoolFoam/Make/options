@@ -1,11 +1,11 @@
 EXE_INC = \
     -I../../src \
-    -I../../libraries/gasMetalThermalProperties/lnInclude \
+    -I../../libraries/TwoPhaseFlowModel/surfaceForces/lnInclude \
     -I./incompressibleGasMetalMixture/lnInclude \
+    -I../../libraries/gasMetalThermalProperties/lnInclude \
     -I../../libraries/sigmoidFunction/lnInclude \
     -I../../libraries/laserHeatSource/lnInclude \
     -I../../libraries/movingReferenceFrame/lnInclude \
-    -I../../libraries/TwoPhaseFlowModel/surfaceForces/lnInclude \
     -I./surfaceLaserHeatSources/lnInclude \
     -I$(FOAM_SOLVERS)/multiphase/interIsoFoam \
     -I$(FOAM_SOLVERS)/multiphase/interFoam \
