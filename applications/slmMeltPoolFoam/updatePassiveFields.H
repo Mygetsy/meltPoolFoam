@@ -9,12 +9,11 @@ if (writeAllFields)
     // For debug: check that heatConduction is almost equal to heatConduction2
     heatConduction = fvc::laplacian(mixture.kappaf(), T);
 
-    const surfaceScalarField kappaByCp = mixture.kappaf()/mixture.Cpf();
+    #include "gradT.H"
 
-    heatConduction2 =
-        fvc::laplacian(kappaByCp, h)
-      - fvc::laplacian(Hfus*kappaByCp, liquidFraction)
-      + fvc::laplacian(kappaByCp*mixture.HsPrimeAlphaGf(), alpha1);
+    heatConduction2 = fvc::laplacian(rhof*kappaByRhoCp, h)
+                     - fvc::laplacian(kappaByRhoCp*hDeltaRhoSolidLiquid, liquidFraction)
+                     - fvc::laplacian(kappaByRhoCp*hDeltaRhoGasSolid, alpha1);
 }
 
 
