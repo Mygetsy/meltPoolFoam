@@ -82,9 +82,6 @@ class incompressibleGasMetalMixture
             //- Metal dictionary
             const dictionary metalDict_;
 
-            //- Flag to evaluate divergence of the velocity field
-            const bool quasiIncompressible_;
-
             //- Melting density change [kg/m^3]
             const scalar rhoJump_;
 
