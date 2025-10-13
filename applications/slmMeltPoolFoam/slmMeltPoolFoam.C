@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
         #include "readDyMControls.H"
         #include "CourantNo.H"
         #include "alphaCourantNo.H"
-        #include "temperatureChange.H"
+        #include "keyFieldsStatistics.H"
         #include "setDeltaT.H"
 
         ++runTime;
@@ -102,8 +102,6 @@ int main(int argc, char *argv[])
 
         // --- Calculate time-dependent quantities
         const dimensionedScalar totalEnthalpy = fvc::domainIntegrate(rho*h);
-	const dimensionedScalar initialMass = fvc::domainIntegrate(rho1 * alpha1);
-	dimensionedScalar updatedMass = fvc::domainIntegrate(rho1 * alpha1);
         // NB: SMALL is too small to be used in the denominator
         const volScalarField divUInMetal("divUInMetal", fvc::div(phi)/(alpha1 + ROOTSMALL));
 
@@ -227,9 +225,6 @@ int main(int argc, char *argv[])
                 turbulence->correct();
             }
         }
-
-        updatedMass.value()  = fvc::domainIntegrate(rho1 * alpha1).value();
-        Info<< "Mass in metal: " << updatedMass.value()  << endl;
 
         #include "updatePassiveFields.H"
         #include "effectiveAbsorptivity.H"
