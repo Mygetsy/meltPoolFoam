@@ -56,9 +56,11 @@ void Foam::gradAlphaHeatSource::calcSource()
 {
     const volScalarField& redistribution = mixture_.surfaceHeatSourceRedistribution();
     const volVectorField& gradAlphaM = mixture_.gradAlphaM();
+    const volScalarField normalDotDirection = fvc::reconstruct(mixture_.nHatf()) & beam().direction();
 
     startTimer();
-    source_ = redistribution*beam().I()*absorptionModelPtr_->A(gradAlphaM, *this);
+    source_ = redistribution*beam().I()*normalDotDirection*pos(normalDotDirection)*absorptionModelPtr_->A(gradAlphaM, *this);
+
     stopTimer();
 }
 
