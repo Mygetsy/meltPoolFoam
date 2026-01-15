@@ -1,0 +1,45 @@
+{
+    "name": "MeltpoolFoam Plus Dev (ccls)",
+    "image": "mygetsy/openfoam-dev-ccls:2406",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ccls-project.ccls",
+                "vadimcn.vscode-lldb"
+            ],
+            "settings": {
+                // Point ccls to your compile_commands.json
+                "ccls.misc.compilationDatabaseDirectory": "/home/openfoam/workspace/applications/slmMeltPoolFoam",
+
+                // 1. Point ccls to the MOUNTED volume (the unified cache)
+                "ccls.cache.directory": "/home/openfoam/.ccls-cache",
+
+                // Performance settings
+                "ccls.index.threads": 4,
+                "C_Cpp.intelliSenseEngine": "disabled",
+                "terminal.integrated.defaultProfile.linux": "bash"
+            }
+        }
+    },
+    "remoteUser": "openfoam",
+    "updateRemoteUserUID": true,
+    "runArgs": [
+        "--cap-add=SYS_PTRACE",
+        "--security-opt", "seccomp=unconfined",
+        "--name", "meltpoolfoam-plus-dev"
+    ],
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/openfoam/workspace,type=bind,consistency=cached",
+    "workspaceFolder": "/home/openfoam/workspace",
+
+    "mounts": [
+        "source=bashhistory-meltpool,target=/commandhistory,type=volume",
+        // 2. This volume will hold your local index + SYMLINKS to the system index
+        "source=ccls-cache-meltpool,target=/home/openfoam/.ccls-cache,type=volume"
+    ],
+
+    // 3. COMMAND: Recursively link system cache into local volume.
+    // 'cp -rs' creates symlinks. The '.' at the end of the source path is critical.
+    // We use '|| true' to ignore errors if links already exist.
+    "postStartCommand": "mkdir -p /home/openfoam/.ccls-cache && if [ -d '/usr/lib/openfoam/openfoam2406/build/linux64GccDPInt32Opt/.ccls-cache' ]; then echo 'Linking system ccls cache...' && cp -rs /usr/lib/openfoam/openfoam2406/build/linux64GccDPInt32Opt/.ccls-cache/. /home/openfoam/.ccls-cache/ 2>/dev/null || true; fi"
+}
+

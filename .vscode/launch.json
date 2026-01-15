@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Build w/ Bear",
+            "type": "node",             // Uses 'node' debugger as a dummy wrapper
+            "request": "launch",
+            "runtimeExecutable": "echo", // Dummy executable
+            "preLaunchTask": "Build Allwmake", // <--- THE MAGIC: Runs your task first
+            "console": "integratedTerminal"
+        }
+    ]
+}
+

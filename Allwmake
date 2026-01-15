@@ -4,8 +4,9 @@ cd "${0%/*}" || exit                                # Run from this directory
 
 #------------------------------------------------------------------------------
 
-libs='../../libraries'
-apps='..'
+libs='libraries'
+apps='applications'
+solver='slmMeltPoolFoam'
 
 wmake $targetType "$libs/TwoPhaseFlowModel/VoF"
 wmake $targetType "$libs/TwoPhaseFlowModel/surfaceForces"
@@ -16,8 +17,8 @@ wmake $targetType "$libs/laserHeatSource"
 wmake $targetType "$libs/trueArrhenius"
 wmake $targetType "$libs/movingReferenceFrame"
 wmake $targetType "$apps/generatePowderBed"
-wmake $targetType incompressibleGasMetalMixture
-wmake $targetType surfaceLaserHeatSources
-wmake $targetType
+wmake $targetType "$apps/$solver/incompressibleGasMetalMixture"
+wmake $targetType "$apps/$solver/surfaceLaserHeatSources"
+wmake $targetType "$apps/$solver"
 
 #------------------------------------------------------------------------------

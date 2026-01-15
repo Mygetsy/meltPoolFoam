@@ -85,3 +85,11 @@ _*
 
 # debug information files
 *.dwo
+
+# LSP files
+**.ccls-cache
+**compile_commands.json
+
+# Mountef file syetem
+**.fseventsd
+**.DS_Store
