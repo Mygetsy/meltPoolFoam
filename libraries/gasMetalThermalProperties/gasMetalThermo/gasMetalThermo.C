@@ -50,6 +50,11 @@ Foam::gasMetalThermo::gasMetalThermo(const fvMesh& mesh)
     solid_(solidDict_),
     liquid_(liquidDict_),
     gas_(gasDict_),
+    //!TODO: Temporary rhoPhase_ do not know how to read from transport properties here
+    rhoSolid_(metalDict_.get<scalar>("rhoSolid")),
+    rhoLiquid_(metalDict_.get<scalar>("rhoLiquid")),
+    rhoGas_(gasDict_.get<scalar>("rhoGas")),
+    betaLiquid_(metalDict_.get<scalar>("betaLiquid")),
     Tmelting_(metalDict_.get<scalar>("Tmelting")),
     Tboiling_(metalDict_.get<scalar>("Tboiling")),
     Hfusion_(metalDict_.get<scalar>("Hfusion")),
@@ -63,7 +68,7 @@ Foam::gasMetalThermo::gasMetalThermo(const fvMesh& mesh)
     scalar hGasAtMelting = gas_.Cp.integral(0, Tmelting_);
     scalar hPreBoiling = hLiquidus + liquid_.Cp.integral(Tmelting_, Tboiling_);
 
-    Info<< endl
+    Info<< "\nThermal properties:" << endl
         << " -- Solidus enthalpy = " << hSolidus << endl
         << " -- Liquidus enthalpy = " << hLiquidus << endl
         << " -- Gas enthalpy at Tmelting = " << hGasAtMelting << endl

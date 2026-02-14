@@ -1,0 +1,24 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/wmake/scripts/AllwmakeParseArguments
+
+#------------------------------------------------------------------------------
+
+libs='libraries'
+apps='applications'
+solver='meltPoolFoam'
+
+wmake $targetType "$libs/TwoPhaseFlowModel/VoF"
+wmake $targetType "$libs/TwoPhaseFlowModel/surfaceForces"
+wmake $targetType "$libs/sigmoidFunction"
+wmake $targetType "$libs/gasMetalThermalProperties"
+wmake $targetType "$libs/movingReferenceFrame"
+wmake $targetType "$libs/laserHeatSource"
+wmake $targetType "$libs/trueArrhenius"
+wmake $targetType "$libs/movingReferenceFrame"
+wmake $targetType "$apps/generatePowderBed"
+wmake $targetType "$apps/$solver/incompressibleGasMetalMixture"
+wmake $targetType "$apps/$solver/surfaceLaserHeatSources"
+wmake $targetType "$apps/$solver"
+
+#------------------------------------------------------------------------------

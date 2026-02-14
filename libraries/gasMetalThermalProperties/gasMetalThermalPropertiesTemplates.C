@@ -87,6 +87,10 @@ Foam::gasMetalThermalProperties<Mixture>::gasMetalThermalProperties
         mesh,
         dimensionedScalar()
     ),
+    liquidFractionInMetal_
+    (
+        volScalarField::New("liquidFractionInMetal", mesh, dimless)
+    ),
     liquidFractionPrimeEnthalpy_
     (
         volScalarField::New("liquidFractionPrimeEnthalpy", mesh, dimMass/dimEnergy)
@@ -180,11 +184,11 @@ Foam::gasMetalThermalProperties<Mixture>::gasMetalThermalProperties
         do
         {
             h_.storePrevIter();
-            h_ = thermo_.h(T_, liquidFraction_, alphaG_);
+            h_ == thermo_.h(T_, liquidFraction_, alphaG_);
             calcMetalFractions();
 
             const volScalarField residualField = mag(h_ - h_.prevIter());
-            residual = gMax(residualField);
+            residual = max(gMax(residualField), gMax(residualField.boundaryField()));
 
             DebugInfo << " -- residual = " << residual << ", iteration = " << nIter + 1 << endl;
         }
@@ -229,10 +233,37 @@ Foam::gasMetalThermalProperties<Mixture>::gasMetalThermalProperties
 template<class Mixture>
 void Foam::gasMetalThermalProperties<Mixture>::calcMetalFractions()
 {
-    const volScalarField x = (h_ - hAtMelting_)/thermo_.Hfusion()/(alphaM_ + SMALL);
+    const volScalarField hGasAtMelt =  thermo_.hGas(
+                                        T_,
+                                        alphaM_ 
+                                        );
 
-    liquidFraction_ = alphaM_*thermo_.sigmoid().value(x);
-    liquidFractionPrimeEnthalpy_ = thermo_.sigmoid().derivative(x)/thermo_.Hfusion();
+    const volScalarField hSolidAtMelt = thermo_.hSol(
+                                        geometricUniformField<scalar>(thermo_.Tmelting().value()),
+                                        alphaM_ 
+                                        );
+
+    const volScalarField hLiquidAtMelt = thermo_.hLiq(
+                                        geometricUniformField<scalar>(thermo_.Tmelting().value()),
+                                        alphaM_ 
+                                        );
+                                         
+    const volScalarField rho1 = alphaG_*thermo_.rhoGas() + alphaM_*thermo_.rhoSolid();
+    const volScalarField rho2 = alphaG_*thermo_.rhoGas() + alphaM_*thermo_.rhoLiquid();
+
+    const volScalarField rho1h1 = alphaG_*thermo_.rhoGas()*hGasAtMelt + alphaM_*thermo_.rhoSolid()*hSolidAtMelt;
+    const volScalarField rho2h2 = alphaG_*thermo_.rhoGas()*hGasAtMelt + alphaM_*thermo_.rhoLiquid()*hLiquidAtMelt;
+
+    const volScalarField h_m = (rho1h1 + rho2h2)/(rho1 + rho2);
+
+    //const volScalarField sigmoidArgument = (h_ - h_m)*sqr((rho1 + rho2))/(4*rho1*rho2*(rho2h2/rho2 - rho1h1/rho1 + h_m*ROOTVSMALL));
+    const volScalarField sigmoidArgument = (rho1*h_ - rho1h1)/(rho1*h_ - rho1h1 + rho2h2 - rho2*h_ + rho1*h_m*ROOTVSMALL) - 0.5;
+
+
+    // liquidFractionInMetal_ = thermo_.sigmoid().value(sigmoidArgument); //!TODO: May be delete
+    // liquidFraction_ = alphaM_*thermo_.sigmoid().value(sigmoidArgument);
+    liquidFractionInMetal_ = thermo_.sigmoid().value(sigmoidArgument);
+    liquidFraction_ = liquidFractionInMetal_ * alphaM_;
 }
 
 
@@ -241,7 +272,7 @@ void Foam::gasMetalThermalProperties<Mixture>::calcRedistribution() const
 {
     const volScalarField CpM = thermo_.Cp(T_, liquidFraction_, geometricUniformField<scalar>(0));
     const volScalarField CpG = thermo_.Cp(T_, liquidFraction_, geometricUniformField<scalar>(1));
-    const dimensionedScalar rhoM = mixture_.rho1();
+    const volScalarField& rhoM = mixture_.rhoM();
     const dimensionedScalar rhoG = mixture_.rho2();
     const volScalarField rho = alphaM_*rhoM + alphaG_*rhoG;
 
@@ -266,10 +297,12 @@ void Foam::gasMetalThermalProperties<Mixture>::correctThermo()
 {
     calcMetalFractions();
 
-    T_ = thermo_.T(h_, hAtMelting_, liquidFraction_, alphaG_);
+    T_ = thermo_.T(h_, liquidFraction_, alphaG_);
     Cp_ = thermo_.Cp(T_, liquidFraction_, alphaG_);
     kappa_ = thermo_.kappa(T_, liquidFraction_, alphaG_);
     HsPrimeAlphaG_ = thermo_.HsPrimeAlphaG(T_);
+
+    h_ == thermo_.h(T_, liquidFraction_, alphaG_);
 
     updatedRedistribution_ = false;
     updatedGradT_ = false;
