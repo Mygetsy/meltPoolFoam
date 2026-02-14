@@ -10,6 +10,7 @@
               Modified work | Copyright (C) 2018 Johan Roenby
                interIsoFoam | Copyright (C) 2019-2020 DLR
             slmMeltPoolFoam | Copyright (C) 2019-2023 Oleg Rogozin
+	       meltPoolFoam | Copyright (C) 2025-2026 Daniil Panov
 -------------------------------------------------------------------------------
 License
     OpenFOAM is free software: you can redistribute it and/or modify it

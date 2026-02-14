@@ -6,7 +6,7 @@ cd "${0%/*}" || exit                                # Run from this directory
 
 libs='libraries'
 apps='applications'
-solver='slmMeltPoolFoam'
+solver='meltPoolFoam'
 
 wmake $targetType "$libs/TwoPhaseFlowModel/VoF"
 wmake $targetType "$libs/TwoPhaseFlowModel/surfaceForces"
