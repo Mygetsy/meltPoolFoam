@@ -4,7 +4,7 @@
         {
             "label": "Build Allwmake",
             "type": "shell",
-            "command": "bear -- ~/workspace/Allwmake",
+            "command": "bear -- ./Allwmake",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -15,7 +15,6 @@
                 "focus": false,
                 "panel": "shared"
             },
-            // FULL MANUAL DEFINITION (Required because ms-vscode.cpptools is missing)
             "problemMatcher": {
                 "owner": "cpp",
                 "fileLocation": ["relative", "${workspaceFolder}"],

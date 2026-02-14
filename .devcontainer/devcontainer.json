@@ -1,6 +1,6 @@
 {
-    "name": "MeltpoolFoam Plus Dev (ccls)",
-    "image": "mygetsy/openfoam-dev-ccls:2406",
+    "name": "OpenFOAM Dev Container for VS Code (ccls + Bear)",
+    "image": "mygetsy/openfoam-dev-ccls:v2406", // Change this to suitable version e.g 13 for ORG or v2506 for COM. Note "v" in the version name.
     "customizations": {
         "vscode": {
             "extensions": [
@@ -9,7 +9,7 @@
             ],
             "settings": {
                 // Point ccls to your compile_commands.json
-                "ccls.misc.compilationDatabaseDirectory": "/home/openfoam/workspace/applications/slmMeltPoolFoam",
+                "ccls.misc.compilationDatabaseDirectory": "/home/openfoam/workspace/",
 
                 // 1. Point ccls to the MOUNTED volume (the unified cache)
                 "ccls.cache.directory": "/home/openfoam/.ccls-cache",
@@ -40,6 +40,6 @@
     // 3. COMMAND: Recursively link system cache into local volume.
     // 'cp -rs' creates symlinks. The '.' at the end of the source path is critical.
     // We use '|| true' to ignore errors if links already exist.
-    "postStartCommand": "mkdir -p /home/openfoam/.ccls-cache && if [ -d '/usr/lib/openfoam/openfoam2406/build/linux64GccDPInt32Opt/.ccls-cache' ]; then echo 'Linking system ccls cache...' && cp -rs /usr/lib/openfoam/openfoam2406/build/linux64GccDPInt32Opt/.ccls-cache/. /home/openfoam/.ccls-cache/ 2>/dev/null || true; fi"
+    "postStartCommand": "mkdir -p /home/openfoam/.ccls-cache && if [ -d '/opt/openfoam/.ccls-cache' ]; then echo 'Linking system ccls cache...' && cp -rs /opt/openfoam/.ccls-cache/. /home/openfoam/.ccls-cache/ 2>/dev/null || true; fi"
 }
 
