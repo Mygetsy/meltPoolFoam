@@ -7,7 +7,7 @@ OpenFOAM solver for simulation melt-pool dynamics.
 
 ## Development Environment Setup (VS Code)
 
-This project uses **Visual Studio Code** with a **Dev Container** to provide a consistent, pre-configured OpenFOAM development environment. This ensures that all dependencies, compilers, and code intelligence (powered by `ccls`) work automatically without manual configuration.
+This project uses **Visual Studio Code** with a **Dev Container** to provide a consistent, pre-configured OpenFOAM development environment. The original repository is [openfoam-dev-ccls-vscode](https://github.com/Mygetsy/openfoam-dev-ccls-vscode). This ensures that all dependencies, compilers, and code intelligence (powered by `ccls`) work automatically without manual configuration.
 
 ### Prerequisites
 
