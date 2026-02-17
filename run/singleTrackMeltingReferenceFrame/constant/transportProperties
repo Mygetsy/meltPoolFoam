@@ -50,9 +50,9 @@ sigma
     type            temperatureDependent;
     sigma           polynomial
     (
-        (-0.0605    0)
-        (12.5e-05                          1)
-        (0.0                                    2)
+        (-0.0605                            0)
+        (12.5e-05                           1)
+        (0.0                                2)
    );
 }
 
@@ -64,9 +64,9 @@ surfaceForces
    	 type            temperatureDependent;
    	 sigma           polynomial
    	 (
-        (-0.0605    0)
-        (12.5e-05                          1)
-        (0.0                                    2)
+        (-0.0605                        0)
+        (12.5e-05                       1)
+        (0.0                            2)
   	 );
   }
   surfaceTensionForceModel fitParaboloid;
@@ -74,8 +74,8 @@ surfaceForces
   deltaFunctionModel alphaCSF;
 }
 
-beta            beta            [ K^-1 ] 0.0;
-mushyCoeff      mushyCoeff      [ kg/m^3/s ] 5e+8; // 1e+12 for PDAS=750nm
-qMushyCoeff     qMushyCoeff                 1e-15;
+beta            beta            [ K^-1 ]          0.0;
+mushyCoeff      mushyCoeff      [ kg/m^3/s ]     5e+8;
+qMushyCoeff     qMushyCoeff                     1e-15;
 
 // ************************************************************************* //

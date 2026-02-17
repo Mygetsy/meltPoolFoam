@@ -32,14 +32,14 @@ timeStop        0.02;
 
 beam
 {
-    type        topHat; // topHat
+    type        topHat; // Gaussian
     direction   ( 0 0 -1 );
     waveLength  1e-6;
 }
 
 source
 {
-    type    gradAlpha; // gradAlpha
+    type    gradAlpha; // rayTracing
 
     gradAlphaModel
     {

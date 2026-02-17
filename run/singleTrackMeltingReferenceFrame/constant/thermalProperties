@@ -16,9 +16,6 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // Sources:
-// Air -- https://www.engineersedge.com/physics/viscosity_of_air_dynamic_and_kinematic_14483.htm
-// Argon -- J. Kestin et al. Equilibrium and Transport Properties of the Noble Gases and Their Mixtures at Low Density.
-//      Journal of Physical and Chemical Reference Data 13, 229 (1984).
 // SS316L -- C. S. Kim. Thermophysical properties of stainless steels. Tech. rep. Argonne National Lab., Ill.(USA), 1975.
 // SS316L -- P. Pichler et al. Measurements of thermophysical properties of solid and liquid NIST SRM 316L stainless steel.
 //      Journal of Material Science 55, 4081--4093 (2020).
@@ -58,9 +55,7 @@ gas
     molWeight       39.95; // for Argon
     kappaCoeffs     (2.1527e-2 2.67e-5);
     rhoGas          2.9;
-    // Air: 2.5e-2 for 293K, 1.1e-1 for 2000K
     CpCoeffs        (520 0); // = 2.5*R/M;
-    // Air: 1200 for liquidus, 1007 for 293K, 1264 for 2000K
 }
 
 sigmoid         erf; // tanh or cut

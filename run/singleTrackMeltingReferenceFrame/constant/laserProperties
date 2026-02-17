@@ -45,8 +45,8 @@ source
     {
         absorption
         {
-            type    constant; // constant
-            absorptivity    0.32;
+            type    constant; // biConstant
+            absorptivity    0.32; //
         }
     }
 

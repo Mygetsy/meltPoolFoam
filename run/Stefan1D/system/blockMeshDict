@@ -14,10 +14,10 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-scale 1e-0; //1e-3
+scale 1e-0;
 
 xmin -0.5;
-xmax 0.5; // r = 2 mm
+xmax 0.5;
 ymin 0.;
 ymax 0.1;
 zmin 0.;
@@ -32,9 +32,9 @@ vertices
     ($xmin $ymax $zmin) //3
     ($xmin $ymin $zmax) //4
     ($xmax $ymin $zmax) //5
-    ($xmax $ymax $zmax) //6 
-    ($xmin $ymax $zmax) //7	
-    );	
+    ($xmax $ymax $zmax) //6
+    ($xmin $ymax $zmax) //7
+    );
 
 blocks
 (

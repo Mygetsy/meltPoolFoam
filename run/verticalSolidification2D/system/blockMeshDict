@@ -32,14 +32,14 @@ vertices
     ($xmin $ymax $zmin) //3
     ($xmin $ymin $zmax) //4
     ($xmax $ymin $zmax) //5
-    ($xmax $ymax $zmax) //6 
-    ($xmin $ymax $zmax) //7	
-    );	
+    ($xmax $ymax $zmax) //6
+    ($xmin $ymax $zmax) //7
+    );
 
 blocks
 (
  hex (0 1 2 3 4 5 6 7)
- (256  1 256)
+ (64  1 64)
  simpleGrading (1 1 1)
 );
 
@@ -53,7 +53,7 @@ boundary
     {
         type wall;
         faces
-        ( 
+        (
             (0 1 2 3)
         );
     }
@@ -79,7 +79,7 @@ boundary
 	faces
 	(
 	 (1 2 6 5)
- 	);	 
+ 	);
     }
 );
 

@@ -58,7 +58,7 @@ internalField   #codeStream
 	 	const scalar k_S = SOLID_PROPERTIES(kappaCoeffs);
 	 	const scalar k_L = LIQUID_PROPERTIES(kappaCoeffs);
 	    const scalar T_m = METAL_PROPERTIES(Tmelting);
-	 	const scalar H_fus METAL_PROPERTIES(Hfusion);
+	 	// const scalar H_fus METAL_PROPERTIES(Hfusion);
 
         const scalar start_time = 100.;
 		const scalar T_0_t = 468.3;
@@ -68,7 +68,7 @@ internalField   #codeStream
         const scalar alpha_L = k_L/(rho_L*Cp_L);
         const scalar R_p = rho_S/rho_L;
 
-        scalar lambdaStefan;
+        scalar lambdaStefan = -1.;
         if (rho_S == 2700. && rho_L == 2400.)
         {lambdaStefan = 0.4729652340797;}
         else if (rho_S == 2700. && rho_L == 2700.)

@@ -16,19 +16,19 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // Sources:
-// hirumalaisamy, Ramakrishnan & Bhalla, Amneet. (2023). A low Mach enthalpy method to model non-isothermal gas-liquid-solid flows with melting and solidification. 10.48550/arXiv.2301.06256. 
+// Thirumalaisamy, Ramakrishnan & Bhalla, Amneet. (2023). A low Mach enthalpy method to model non-isothermal gas-liquid-solid flows with melting and solidification. 10.48550/arXiv.2301.06256.
 //
 metal
 {
-    molWeight       26.98; 
+    molWeight       26.98;
 
-    Tmelting        936.6; 
-    Tboiling        5000; 
-    Tcritical       4500; 
+    Tmelting        936.6;
+    Tboiling        5000;
+    Tcritical       4500;
 
-    Hfusion         383840; 
+    Hfusion         383840;
     Hvapour         0;
-    
+
     rhoSolid        2700;
     rhoLiquid       2475;
     betaLiquid      -1.414e-04;;
@@ -54,7 +54,7 @@ gas
     CpCoeffs        (1042.4 0);
 }
 
-sigmoid         cut; // tanh or cut
+sigmoid         cut; // erf
 
 solidificationFields
 {

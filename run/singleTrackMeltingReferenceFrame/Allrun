@@ -8,8 +8,6 @@ application=$(getApplication)
 
 runApplication blockMesh
 cp 0/alpha.metal.orig 0/alpha.metal
-#runApplication topoSet
-#runApplication refineMesh -overwrite
 runApplication setFields
 touch foam.foam
 
