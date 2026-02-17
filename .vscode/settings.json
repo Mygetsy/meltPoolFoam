@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "**/0/**": "csharp",
+    "**/constant/**": "csharp",
+    "**/system/**": "csharp"
+  }
+}
