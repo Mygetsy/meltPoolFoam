@@ -1,0 +1,15 @@
+#!/bin/bash -e
+cd ${0%/*} || exit 1    # run from this directory
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+application=$(getApplication)
+
+touch foam.foam
+
+if [[ "$1" == "-parallel" ]]; then
+    runParallel $application
+fi
+
+echo "All is done!"

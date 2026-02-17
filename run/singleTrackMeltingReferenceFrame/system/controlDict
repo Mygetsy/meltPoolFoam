@@ -1,0 +1,69 @@
+/*--------------------------------*- C++ -*----------------------------------
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     slmMeltPoolFoam;
+
+startFrom       latestTime;
+
+startTime       0.0;
+
+stopAt          endTime;
+
+endTime         0.08;
+
+deltaT          1.0e-7;
+
+writeControl    adjustableRunTime;  // use timeStep for debug
+
+writeInterval   2e-3;               // use 1 for debug
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+maxCo           0.08;
+maxAlphaCo      0.08;
+maxDeltaTemp    1050;
+
+maxDeltaT       1.0e-6;
+
+writeAllFields yes;
+
+DebugSwitches
+{
+    isoAdvection 0;
+    reconstructionSchemes 0;
+    incompressibleGasMetalThermalProperties 0;
+    rayTracing 0;
+    rayTracingParticle 0;
+    Fresnel 0;
+    laserProperties 0;
+}
+
+// ************************************************************************* //

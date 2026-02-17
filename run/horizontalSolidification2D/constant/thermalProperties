@@ -1,0 +1,65 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      thermalProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Sources:
+// hirumalaisamy, Ramakrishnan & Bhalla, Amneet. (2023). A low Mach enthalpy method to model non-isothermal gas-liquid-solid flows with melting and solidification. 10.48550/arXiv.2301.06256. 
+//
+metal
+{
+    molWeight       26.98; 
+
+    Tmelting        936.6; 
+    Tboiling        5000; 
+    Tcritical       4500; 
+
+    Hfusion         383840; 
+    Hvapour         0;
+    
+    rhoSolid        2700;
+    rhoLiquid       2475;
+    betaLiquid      -1.414e-04;;
+
+    solid
+    {
+        kappaCoeffs (211.0 0);
+        CpCoeffs    (910.0 0);
+    }
+
+    liquid
+    {
+        kappaCoeffs (91 0 );
+        CpCoeffs    (1042.4  0);
+    }
+}
+
+gas
+{
+    molWeight       28.97;
+    rhoGas          0.4;
+    kappaCoeffs     (6.1e-3  0);
+    CpCoeffs        (1042.4 0);
+}
+
+sigmoid         cut; // tanh or cut
+
+solidificationFields
+{
+    enabled     no; // compute and write solidification(Gradient|Speed)
+    alphaTol    0.5;
+}
+
+// ************************************************************************* //

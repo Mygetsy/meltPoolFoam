@@ -1,0 +1,71 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      laserProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+power           1e-9;
+power_
+{
+    type        sine;
+    level       113;
+    amplitude   50;
+    period      1e-4;
+    scale       1;
+}
+
+radius          250e-6;
+velocity        ( 0 0 0 );
+coordStart      ( 0 0 1e-4 );
+timeStop        0.02;
+
+beam
+{
+    type        topHat; // topHat
+    direction   ( 0 0 -1 );
+    waveLength  1e-6;
+}
+
+source
+{
+    type    gradAlpha; // gradAlpha
+
+    gradAlphaModel
+    {
+        absorption
+        {
+            type    biconstant; // coordinateBased | constant
+            absorptivity    0.35;
+            absorptivityInSolid    0.35; // for biconstant model only
+        }
+    }
+
+    rayTracingModel
+    {
+        nRays           300;
+        RcutByR         1.0;
+        writeOBJ        true;
+        useSubCellData  true;
+
+        scattering
+        {
+            threshold   1e-5; // do not scatter if the particle energy contribution is lower
+            type        Fresnel;
+            n           3.27; // refractive index
+            k           4.48; // absorptive index
+        }
+    }
+}
+
+// ************************************************************************* //

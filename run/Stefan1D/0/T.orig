@@ -1,0 +1,125 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2212                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    arch        "LSB;label=32;scalar=64";
+    class       volScalarField;
+    location    "0";
+    object      T;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 1 0 0 0];
+
+internalField   #codeStream
+{
+    codeInclude
+      #{
+      #include "fvCFD.H"
+      #include "Polynomial.H"
+      #};
+
+      codeOptions /* Compilation options */
+      #{
+        -I$(FOAM_SRC)/finiteVolume/lnInclude \
+        -I$(FOAM_SRC)/meshTools/lnInclude
+      #};
+
+      codeLibs  /* Libraries for compilation */
+      #{
+        -lmeshTools \
+        -lfiniteVolume
+      #};
+
+      code  /* User code */
+      #{
+
+        /*Access to internal mesh information */
+        const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+        const fvMesh& mesh = refCast<const fvMesh>(d.db());
+
+        #define METAL_PROPERTIES(constant) (d.db().lookupObject<IOdictionary>("thermalProperties").subDict("metal").get<scalar>(#constant))
+        #define LIQUID_PROPERTIES(constant) Polynomial<2>(d.db().lookupObject<IOdictionary>("thermalProperties").subDict("metal").subDict("liquid").lookup(#constant)).value(0)
+        #define SOLID_PROPERTIES(constant) Polynomial<2>(d.db().lookupObject<IOdictionary>("thermalProperties").subDict("metal").subDict("solid").lookup(#constant)).value(0)
+
+
+        /*Prepare constats from thermalProperties*/
+		const scalar rho_S = METAL_PROPERTIES(rhoSolid);
+	 	const scalar rho_L = METAL_PROPERTIES(rhoLiquid);
+	 	const scalar Cp_S = SOLID_PROPERTIES(CpCoeffs);
+	 	const scalar Cp_L = LIQUID_PROPERTIES(CpCoeffs);
+	 	const scalar k_S = SOLID_PROPERTIES(kappaCoeffs);
+	 	const scalar k_L = LIQUID_PROPERTIES(kappaCoeffs);
+	    const scalar T_m = METAL_PROPERTIES(Tmelting);
+	 	const scalar H_fus METAL_PROPERTIES(Hfusion);
+
+        const scalar start_time = 100.;
+		const scalar T_0_t = 468.3;
+		const scalar T_x_0 = 1873.2;
+
+        const scalar alpha_S = k_S/(rho_S*Cp_S);
+        const scalar alpha_L = k_L/(rho_L*Cp_L);
+        const scalar R_p = rho_S/rho_L;
+
+        scalar lambdaStefan;
+        if (rho_S == 2700. && rho_L == 2400.)
+        {lambdaStefan = 0.4729652340797;}
+        else if (rho_S == 2700. && rho_L == 2700.)
+        {lambdaStefan = 0.4932628702557797;}
+        else if (rho_S == 2700. && rho_L == 1500.)
+        {lambdaStefan = 0.3959633516691926;}
+        else{FatalErrorInFunction
+                        << "Lambda for Stefan problem is not in density set: "
+                        << "rho_S = " << rho_S
+                        << " rho_L = "  << rho_L
+                        << exit(FatalError);}
+
+        scalarField Temp(mesh.nCells(), 0.); /* initialization */
+
+
+        forAll(Temp, i) /* Loop on elements */
+        {
+          scalar x = -mesh.C()[i][0] + 0.5;
+
+          const scalar temp_solid = T_0_t + (T_m - T_0_t)*Foam::erf(x/(2*Foam::sqrt(alpha_S*start_time)))/Foam::erf(lambdaStefan*Foam::sqrt(alpha_L/alpha_S));
+          const scalar temp_liquid = T_x_0 + (T_m - T_x_0)*(Foam::erfc(x/(2*Foam::sqrt(alpha_L*start_time)) - lambdaStefan*(1 - R_p)))/Foam::erfc(lambdaStefan*R_p);
+
+          scalar front_location = 2*Foam::sqrt(alpha_L*start_time)*lambdaStefan;
+          Temp[i] = x < front_location ? temp_solid : temp_liquid;
+          Info
+            << " -- x = " << x << ", "
+            << " T = " << Temp[i] << endl;
+      }
+
+        Temp.writeEntry("",os); /* Write output in the dictionary */
+
+        #};
+};
+
+boundaryField
+{
+    left
+    {
+	type            zeroGradient;
+    }
+    right
+    {
+        type            fixedValue;
+        value           uniform 468.3;
+    }
+    defaultFaces
+    {
+        type            empty;
+    }
+
+}
+
+
+// ************************************************************************* //

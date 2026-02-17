@@ -1,0 +1,165 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+scale 1e-3; //1e-3
+
+xmin -3.5;
+xmax 1.; //3;
+ymin -1.;
+ymax 1.;
+zmin -1.5;
+zmax 0.7;
+cells 30;
+
+vertices
+(
+    ($xmin $ymin $zmin) //0
+    ($xmax $ymin $zmin) //1
+    ($xmax $ymax $zmin) //2
+    ($xmin $ymax $zmin) //3
+
+    ($xmin $ymin $zmax) //4
+    ($xmax $ymin $zmax) //5
+    ($xmax $ymax $zmax) //6
+    ($xmin $ymax $zmax) //7
+);
+
+// Refinment settings
+d_h 50e-3;
+
+// X axis four zones in increae of X
+d_h_x $d_h;
+x_1 3.15;
+x_2 0.35;
+x_3 0.35;
+x_4 0.65;
+k_x 1.15;
+
+// Y axis four zones in increae of Y
+d_h_y $d_h;
+y_1 0.675;
+y_2 0.325;
+y_3 0.325;
+y_4 0.675;
+k_y 1.15;
+
+// Z axis four zones in increae of Z
+d_h_z $d_h;
+z_1 1.25;
+z_2 0.25;
+z_3 0.2;
+z_4 0.5;
+k_z 1.15;
+
+// Evaluation for X axis
+one_by_lnk_x #eval "1/log($k_x)";
+N_x #eval "round($one_by_lnk_x*log(pow($k_x,($x_2+$x_3)/$d_h_x)*($d_h_x - $x_1*(1 - $k_x))*($d_h_x - $x_4*(1 - $k_x))/sqr($d_h_x)))";
+th_x_1 #eval "$one_by_lnk_x*log(($d_h_x - $x_1*(1 - $k_x))/$d_h_x)/$N_x";
+th_x_2 #eval "$x_2/($N_x*$d_h_x)";
+th_x_3 #eval "$x_3/($N_x*$d_h_x)";
+th_x_4 #eval "$one_by_lnk_x*log(($d_h_x - $x_4*(1 - $k_x))/$d_h_x)/$N_x";
+sigma_x_1 #eval "pow($k_x,-$N_x*$th_x_1)";
+sigma_x_2 1.;
+sigma_x_3 1.;
+sigma_x_4 #eval "pow($k_x,$N_x*$th_x_4)";
+
+// Evaluation for Y axis
+one_by_lnk_y #eval "1/log($k_y)";
+N_y #eval "round($one_by_lnk_y*log(pow($k_y,($y_2+$y_3)/$d_h_y)*($d_h_y - $y_1*(1 - $k_y))*($d_h_y - $y_4*(1 - $k_y))/sqr($d_h_y)))";
+th_y_1 #eval "$one_by_lnk_y*log(($d_h_y - $y_1*(1 - $k_y))/$d_h_y)/$N_y";
+th_y_2 #eval "$y_2/($N_y*$d_h_y)";
+th_y_3 #eval "$y_3/($N_y*$d_h_y)";
+th_y_4 #eval "$one_by_lnk_y*log(($d_h_y - $y_4*(1 - $k_y))/$d_h_y)/$N_y";
+sigma_y_1 #eval "pow($k_y,-$N_y*$th_y_1)";
+sigma_y_2 1.;
+sigma_y_3 1.;
+sigma_y_4 #eval "pow($k_y,$N_y*$th_y_4)";
+
+// Evaluation for Z axis
+one_by_lnk_z #eval "1/log($k_z)";
+N_z #eval "round($one_by_lnk_z*log(pow($k_z,($z_2+$z_3)/$d_h_z)*($d_h_z - $z_1*(1 - $k_z))*($d_h_z - $z_4*(1 - $k_z))/sqr($d_h_z)))";
+th_z_1 #eval "$one_by_lnk_z*log(($d_h_z - $z_1*(1 - $k_z))/$d_h_z)/$N_z";
+th_z_2 #eval "$z_2/($N_z*$d_h_z)";
+th_z_3 #eval "$z_3/($N_z*$d_h_z)";
+th_z_4 #eval "$one_by_lnk_z*log(($d_h_z - $z_4*(1 - $k_z))/$d_h_z)/$N_z";
+sigma_z_1 #eval "pow($k_z,-$N_z*$th_z_1)";
+sigma_z_2 1.;
+sigma_z_3 1.;
+sigma_z_4 #eval "pow($k_z,$N_z*$th_z_4)";
+
+blocks
+(
+ hex (0 1 2 3 4 5 6 7) ($N_x  $N_y  $N_z)
+ simpleGrading
+ (
+    (
+        ($x_1           $th_x_1                 $sigma_x_1)
+        ($x_2           $th_x_2                 $sigma_x_2)
+        ($x_3           $th_x_3                 $sigma_x_3)
+        ($x_4           $th_x_4                 $sigma_x_4)
+    )
+    (
+        ($y_1           $th_y_1                 $sigma_y_1)
+        ($y_2           $th_y_2                 $sigma_y_2)
+        ($y_3           $th_y_3                 $sigma_y_3)
+        ($y_4           $th_y_4                 $sigma_y_4)
+    )
+    (
+        ($z_1           $th_z_1                 $sigma_z_1)
+        ($z_2           $th_z_2                 $sigma_z_2)
+        ($z_3           $th_z_3                 $sigma_z_3)
+        ($z_4           $th_z_4                 $sigma_z_4)
+    )
+)
+);
+
+
+edges
+(
+);
+
+boundary
+(
+    bottom
+    {
+        type wall;
+        faces
+        (
+            (0 1 2 3)
+        );
+    }
+    top
+    {
+        type wall;
+        faces
+        (
+            (4 5 6 7)
+        );
+    }
+    side
+    {
+        type wall;
+        faces
+        (
+            (3 7 4 0) // left
+            (1 2 6 5) // right
+            (3 2 6 7) // front
+            (0 1 5 4) // back
+        );
+    }
+);
+
+// ************************************************************************* //
