@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     slmMeltPoolFoam;
+application     meltPoolFoam;
 
 startFrom       latestTime;
 

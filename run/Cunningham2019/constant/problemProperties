@@ -10,34 +10,15 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
-    object      decomposeParDict;
+    location    "constant";
+    object      problemProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-numberOfSubdomains 4;
+ambientPressure     [ Pa ]  101325;
+ambientTemperature  [ K ]   293;
 
-method          simple;
-
-simpleCoeffs
-{
-    n               (2 2 1);
-}
-
-hierarchicalCoeffs
-{
-    n               (1 1 1);
-    order           xyz;
-}
-
-manualCoeffs
-{
-    dataFile        "";
-}
-
-distributed     no;
-
-roots           ( );
-
+emissivity          0.2;
+evaporationCoeff    0.82;
 
 // ************************************************************************* //

@@ -16,37 +16,34 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // Sources:
-// SS316L -- C. S. Kim. Thermophysical properties of stainless steels. Tech. rep. Argonne National Lab., Ill.(USA), 1975.
-// SS316L -- P. Pichler et al. Measurements of thermophysical properties of solid and liquid NIST SRM 316L stainless steel.
-//      Journal of Material Science 55, 4081--4093 (2020).
-// SS316L -- K. C. Mills, Recommended Values of Thermophysical Properties for Selected Commercial Alloys, 2002
+// K. C. Mills, Recommended Values of Thermophysical Properties for Selected Commercial Alloys, 2002
+//
 
 metal
 {
-    molWeight       55.95; // for 0.691Fe + 0.183Cr + 0.114Ni + 0.012Mo
+    molWeight       47.86; // for Ti
 
-    Tmelting        1700; // Kim: 1700; Pichler: solidus=1675, liquidus=1708
-    Tboiling        3090; // Kim
+    Tmelting        1923; // Mills Ti64
+    Tboiling        3558; // Brangers, Brook pure Ti
     Tcritical       4500; // maximum temperature in Clausius-Clapeyron equation
 
-    Hfusion         2.9e5; // Pichler
-    Hvapour         7.41e6;
+    Hfusion         2.86e5; // Mills Ti64
+    Hvapour         9.82e6; // Check...now from Zenz
 
-    rhoSolid        7256;
-    rhoLiquid       7256;
+    rhoSolid        4170;   // Mills Ti64 at 1650
+    rhoLiquid       4170;
     betaLiquid      0;
 
-    // From Mills, 2002
     solid
     {
-        kappaCoeffs (10.865 1.4e-2);
-        CpCoeffs    (459.0 0.1328);
-}
+        kappaCoeffs (2.1 1.44e-2);   // Mills Ti64
+        CpCoeffs    (560 9.3e-2);     // Mills Ti64 with phase transform
+    }
 
     liquid
     {
-        kappaCoeffs (5.54 1.31e-2);
-        CpCoeffs    (769.9 0);
+        kappaCoeffs (-6.6 1.83e-2);     // Boivineau
+        CpCoeffs    (830 0);            // Mills Ti64
     }
 }
 
@@ -55,7 +52,7 @@ gas
     molWeight       39.95; // for Argon
     kappaCoeffs     (2.1527e-2 2.67e-5);
     rhoGas          2.9;
-    CpCoeffs        (520 0); // = 2.5*R/M;
+    CpCoeffs        (830 0);
 }
 
 sigmoid         erf; // tanh or cut

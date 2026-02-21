@@ -10,34 +10,24 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
-    object      decomposeParDict;
+    object      movingFrameDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-numberOfSubdomains 4;
+type    none; // none, given, adaptive
 
-method          simple;
-
-simpleCoeffs
+givenFrame
 {
-    n               (2 2 1);
+    Urel
+    {
+        type coded;
+        name exponentialRelaxation;
+
+        code
+        #{
+            return 0.025*vector(1, 0, 0);
+        #};
+    }
 }
 
-hierarchicalCoeffs
-{
-    n               (1 1 1);
-    order           xyz;
-}
-
-manualCoeffs
-{
-    dataFile        "";
-}
-
-distributed     no;
-
-roots           ( );
-
-
-// ************************************************************************* //
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

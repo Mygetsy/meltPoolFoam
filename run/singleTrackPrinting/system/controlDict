@@ -51,7 +51,7 @@ maxCo           0.5;
 maxAlphaCo      0.4;
 maxDeltaTemp    1000;
 
-maxDeltaT       1;
+maxDeltaT       2e-7;
 
 writeAllFields yes;
 

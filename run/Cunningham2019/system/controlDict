@@ -1,4 +1,4 @@
-/*--------------------------------*- C++ -*----------------------------------*\
+/*--------------------------------*- C++ -*----------------------------------
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
 |  \\    /   O peration     | Version:  dev                                   |
@@ -23,19 +23,19 @@ startTime       0.0;
 
 stopAt          endTime;
 
-endTime         5.0e-1;
+endTime         0.8e-3;
 
-deltaT          1e-4;
+deltaT          1.0e-7;
 
 writeControl    adjustableRunTime;  // use timeStep for debug
 
-writeInterval   5.0e-3;               // use 1 for debug
+writeInterval   1e-5;               // use 1 for debug
 
 purgeWrite      0;
 
 writeFormat     binary;
 
-writePrecision  8;
+writePrecision  6;
 
 writeCompression off;
 
@@ -45,13 +45,13 @@ timePrecision   6;
 
 runTimeModifiable yes;
 
-adjustTimeStep  no;
+adjustTimeStep  yes;
 
-maxCo           0.25;
-maxAlphaCo      0.2;
-maxDeltaTemp    1500;
+maxCo           0.08;
+maxAlphaCo      0.08;
+maxDeltaTemp    1050;
 
-maxDeltaT       1;
+maxDeltaT       1.0e-6;
 
 writeAllFields yes;
 

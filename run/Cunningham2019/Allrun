@@ -7,10 +7,9 @@ cd ${0%/*} || exit 1    # run from this directory
 application=$(getApplication)
 
 runApplication blockMesh
-touch foam.foam
 cp 0/alpha.metal.orig 0/alpha.metal
 runApplication setFields
-runApplication generatePowderBed alpha.metal
+touch foam.foam
 
 if [[ "$1" == "-parallel" ]]; then
     runApplication decomposePar
@@ -22,25 +21,8 @@ if [[ "$1" == "-parallel" ]]; then
     runParallel $application
     # Mesh reconstruction is not needed when a dynamic mesh is used
     # Use "Decomposed Case" in Paraview instead
-    if [[ "$meshType" == staticFvMesh ]]; then
-        runApplication reconstructPar
-    fi
 else
     runApplication $application
 fi
-
-runApplication ./plot_A.sh -eps -min=0.3 -max=0.9
-
-root_dir="$(pwd | sed 's_/run/.*_/run_g')/.."
-dir=rayTracing
-if [[ -d "$dir" ]]; then
-    "$root_dir/tools/obj2vtkseries.py" "$dir" > "$dir"/"$dir".vtk.series
-    run() { runApplication "$@"; }
-    for obj in $(find "$dir" -name '*.obj'); do
-        vtk="${obj%obj}vtk"
-        [[ -f "$vtk" ]] && continue
-        run objToVTK "$obj" "$vtk"
-        run() { "$@" >> log.objToVTK; }
-    done
-fi
+sleep 10
 echo "All is done!"
