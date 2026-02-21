@@ -33,7 +33,7 @@ Foam::surfaceForces::surfaceForces
     const dictionary& dict
 )
 :
-    surfaceForcesCoeffs_(dict.subDict("surfaceForces")),
+    surfaceForcesCoeffs_(dict), // Now look in the whole transportProperties
     alpha1_(alpha1),
     mesh_(alpha1.mesh()),
     surfTenForceModel_(nullptr),
