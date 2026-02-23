@@ -1,6 +1,11 @@
 // Update alpha1
 #include "alphaSuSp.H"
-advector.advect(Sp, fvc::div(phi)());
+
+if (mixture.quasiIncompressible()) {
+    advector.advect(Sp, fvc::div(phi)());
+} else {
+    advector.advect(Sp, zeroField());
+}
 
 #include "rhofs.H"
 rhoPhi = (rho1f - rho2f)*advector.alphaPhi() + rho2f*phi;
