@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-ambientPressure     [ Pa ]  0;
+ambientPressure     [ Pa ]  0; // Turn off the evapoartion model
 ambientTemperature  [ K ]   293;
 
 emissivity          0.2;

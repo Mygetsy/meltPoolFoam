@@ -29,9 +29,6 @@ metal
     Hfusion         383840;
     Hvapour         0;
 
-    rhoSolid        2700;
-    rhoLiquid       2475;
-    betaLiquid      -1.414e-04;;
 
     solid
     {
@@ -49,7 +46,6 @@ metal
 gas
 {
     molWeight       28.97;
-    rhoGas          0.4;
     kappaCoeffs     (6.1e-3  0);
     CpCoeffs        (1042.4 0);
 }

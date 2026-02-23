@@ -25,14 +25,14 @@ power_
     scale       1;
 }
 
-radius          47.5e-6; // 70.0e0-6-
+radius          47.5e-6; // 70.0e-6
 velocity        ( 0.0 0 0 );
 coordStart      ( 0 0 1e-4 );
 timeStop        0.7e-3;
 
 beam
 {
-    type        Gaussian; // topHat
+    type        topHat; // topHat, Gaussian
     direction   ( 0 0 -1 );
     waveLength  1e-6;
 }
@@ -61,8 +61,8 @@ source
         {
             threshold   1e-5; // do not scatter if the particle energy contribution is lower
             type        Fresnel;
-            n           3.86; // refractive index
-            k           6.10; // absorptive index
+            n           3.7; // refractive index
+            k           4.0; // absorptive index
         }
     }
 }

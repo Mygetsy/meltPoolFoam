@@ -32,8 +32,7 @@ metal
     quasiIncompressible true;
 
     rhoSolid        7256;
-    dRhoDT.solid    (0 0);
-    dRhoDT.liquid   (0  0);
+    betaLiquid      0;
     tauCorr             1e12;
 }
 
@@ -57,22 +56,10 @@ sigma
 }
 
 
-surfaceForces
-{
-  sigma
- {
-   	 type            temperatureDependent;
-   	 sigma           polynomial
-   	 (
-        (1.5                        0)
-        (12.5e-05                       1)
-        (0.0                            2)
-  	 );
-  }
-  surfaceTensionForceModel fitParaboloid;
-  accelerationForceModel gravity;
-  deltaFunctionModel alphaCSF;
-}
+surfaceTensionForceModel fitParaboloid;
+accelerationForceModel gravity;
+deltaFunctionModel alphaCSF;
+
 
 beta            beta            [ K^-1 ]          0.0;
 mushyCoeff      mushyCoeff      [ kg/m^3/s ]     5e+3;

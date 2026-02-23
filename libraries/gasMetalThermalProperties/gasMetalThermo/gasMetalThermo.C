@@ -42,6 +42,17 @@ Foam::gasMetalThermo::gasMetalThermo(const fvMesh& mesh)
             IOobject::NO_WRITE
         )
     ),
+    transportDict_
+    (
+	IOobject
+	(
+	    "transportProperties",
+	    mesh.time().constant(),
+ 	    mesh.thisDb(),
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    ),
     mesh_(mesh),
     metalDict_(subDict("metal")),
     solidDict_(metalDict_.subDict("solid")),
@@ -51,10 +62,10 @@ Foam::gasMetalThermo::gasMetalThermo(const fvMesh& mesh)
     liquid_(liquidDict_),
     gas_(gasDict_),
     //!TODO: Temporary rhoPhase_ do not know how to read from transport properties here
-    rhoSolid_(metalDict_.get<scalar>("rhoSolid")),
-    rhoLiquid_(metalDict_.get<scalar>("rhoLiquid")),
-    rhoGas_(gasDict_.get<scalar>("rhoGas")),
-    betaLiquid_(metalDict_.get<scalar>("betaLiquid")),
+    rhoSolid_(transportDict_.subDict("metal").get<scalar>("rhoSolid")),
+    rhoLiquid_(transportDict_.subDict("metal").get<scalar>("rho")),
+    rhoGas_(transportDict_.subDict("gas").get<scalar>("rho")),
+    betaLiquid_(transportDict_.subDict("metal").get<scalar>("betaLiquid")),
     Tmelting_(metalDict_.get<scalar>("Tmelting")),
     Tboiling_(metalDict_.get<scalar>("Tboiling")),
     Hfusion_(metalDict_.get<scalar>("Hfusion")),

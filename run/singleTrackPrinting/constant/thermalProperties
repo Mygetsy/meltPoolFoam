@@ -32,9 +32,6 @@ metal
     Hfusion         2.9e5; // Pichler
     Hvapour         7.41e6;
 
-    rhoSolid        7256;
-    rhoLiquid       7256;
-    betaLiquid      0;
 
     // From Mills, 2002
     solid
@@ -54,7 +51,6 @@ gas
 {
     molWeight       39.95; // for Argon
     kappaCoeffs     (2.1527e-2 2.67e-5);
-    rhoGas          2.9;
     CpCoeffs        (520 0); // = 2.5*R/M;
 }
 

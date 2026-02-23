@@ -77,6 +77,9 @@ class gasMetalThermo
 
     // Private data
 
+        //-Dictionary to read constans from transportProperties
+        const IOdictionary transportDict_;
+
         //- Reference to the mesh
         const fvMesh& mesh_;
 
@@ -85,13 +88,13 @@ class gasMetalThermo
 
         //- Kappa and Cp properties of all phases
         const kappaCp solid_, liquid_, gas_;
-        
+
         //- Density of all phases
         const scalar rhoSolid_, rhoLiquid_, rhoGas_;
 
         //- Density change coefficient [1/K]
         const scalar betaLiquid_;
-        
+
         //- Temperature of melting [K]
         const scalar Tmelting_;
 
@@ -178,7 +181,7 @@ public:
             {
                 return *sigmoidPtr_;
             }
-            
+
             //- Return solid metal density [kg/m^3]
             dimensionedScalar rhoSolid() const
             {
@@ -233,7 +236,7 @@ public:
                 const T3& gasFraction,
                 const word& name = "h"
             ) const;
-            
+
             //- Specific enthalpy Gas phase [J/kg]
             template<class T1, class T2>
             tmp<T2> hGas

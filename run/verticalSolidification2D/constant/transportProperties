@@ -26,8 +26,7 @@ metal
     quasiIncompressible true;
 
     rhoSolid        2700;
-    dRhoDT.solid    (0 0);
-    dRhoDT.liquid   (0 0);
+    betaLiquid      -1.41e-04;
     tauCorr         1e-4;
 }
 
@@ -46,17 +45,11 @@ sigma
         sigma           0.87;
     }
 
-surfaceForces
-{
-    sigma
-    {
-        type            constant;
-        sigma           0.87;
-    }
-  surfaceTensionForceModel RDF;
-  accelerationForceModel gravity;
-  deltaFunctionModel alphaCSF;
-}
+
+surfaceTensionForceModel RDF;
+accelerationForceModel gravity;
+deltaFunctionModel alphaCSF;
+
 
 beta            beta            [ K^-1 ] 0.0;
 mushyCoeff      mushyCoeff      [ kg/m^3/s ] 5e+7; // 1e+12 for PDAS=750nm

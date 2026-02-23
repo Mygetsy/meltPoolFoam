@@ -30,9 +30,6 @@ metal
     Hfusion         2.86e5; // Mills Ti64
     Hvapour         9.82e6; // Check...now from Zenz
 
-    rhoSolid        4170;   // Mills Ti64 at 1650
-    rhoLiquid       4170;
-    betaLiquid      0;
 
     solid
     {
@@ -51,7 +48,6 @@ gas
 {
     molWeight       39.95; // for Argon
     kappaCoeffs     (2.1527e-2 2.67e-5);
-    rhoGas          2.9;
     CpCoeffs        (830 0);
 }
 

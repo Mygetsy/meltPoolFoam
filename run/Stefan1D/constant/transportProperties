@@ -26,6 +26,7 @@ metal
     quasiIncompressible true;
 
     rhoSolid        2700;
+    betaLiquid      0.0;
     tauCorr         1e12;       // No correction for the mass
 }
 
@@ -43,17 +44,11 @@ sigma
         sigma           0.0;
     }
 
-surfaceForces
-{
-    sigma
-    {
-        type            constant;
-        sigma           0.0;
-    }
-  surfaceTensionForceModel gradAlpha;
-  accelerationForceModel gravity;
-  deltaFunctionModel alphaCSF;
-}
+
+surfaceTensionForceModel gradAlpha;
+accelerationForceModel gravity;
+deltaFunctionModel alphaCSF;
+
 
 beta            beta            [ K^-1 ]        0.0;
 mushyCoeff      mushyCoeff      [ kg/m^3/s ]    1.0e+7;

@@ -16,7 +16,7 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // Sources for Aluminum:
-// Thirumalaisamy, Ramakrishnan & Bhalla, Amneet. (2023). A low Mach enthalpy method to model non-isothermal gas-liquid-solid flows with melting and solidification. 10.48550/arXiv.2301.06256. 
+// Thirumalaisamy, Ramakrishnan & Bhalla, Amneet. (2023). A low Mach enthalpy method to model non-isothermal gas-liquid-solid flows with melting and solidification. 10.48550/arXiv.2301.06256.
 
 metal
 {
@@ -29,9 +29,6 @@ metal
     Hfusion         383840;
     Hvapour         0;
 
-    rhoSolid        2700;
-    rhoLiquid       2400;
-    betaLiquid      0.0;
 
     solid
     {
@@ -49,7 +46,6 @@ metal
 gas
 {
     molWeight       28.97;
-    rhoGas          0.4;
     kappaCoeffs     (6.1e-3  0);
     CpCoeffs        (1042.4 0);
 }
