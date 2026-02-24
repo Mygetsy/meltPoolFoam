@@ -185,7 +185,9 @@ void Foam::incompressibleGasMetalMixture::updateRhoM()
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 Foam::tmp<Foam::surfaceScalarField>  Foam::incompressibleGasMetalMixture::surfaceTensionForce()
 {
-    return surfForcesPtr_->surfaceTensionForce();
+    const surfaceScalarField boilMask = neg(fvc::interpolate(T(), "interpolate(T)") - thermo_.Tboiling());
+
+    return boilMask*(surfForcesPtr_->surfaceTensionForce());
 }
 
 
@@ -196,11 +198,12 @@ Foam::tmp<Foam::volVectorField> Foam::incompressibleGasMetalMixture::marangoniFo
 
     const volVectorField& gradAlphaM = gasMetalThermalProperties::gradAlphaM();
     const volVectorField& gradT = gasMetalThermalProperties::gradT();
+    const volScalarField boilMask = neg(T() - thermo_.Tboiling());
 
     // This is an alternative formula:
     //  gradT = TPrimeEnthalpy()*fvc::grad(h_) + TPrimeMetalFraction()*gradAlphaM;
 
-    return dSigmaDT()*(gradT & I_nn)*mag(gradAlphaM);
+    return boilMask*dSigmaDT()*(gradT & I_nn)*mag(gradAlphaM);
 }
 
 
