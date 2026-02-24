@@ -69,6 +69,7 @@ Foam::incompressibleGasMetalMixture::incompressibleGasMetalMixture
     Tcritical_("Tcritical", dimTemperature, thermo().subDict("metal")),
     metalDict_(subDict("metal")),
     quasiIncompressible_(metalDict_.getOrDefault("quasiIncompressible", false)),
+    momentumRedistribution_(metalDict_.getOrDefault("momentumRedistribution", false)),
     rhoJump_(rho1_.value() - metalDict_.get<scalar>("rhoSolid")),
     initialMass_("initialMass", dimMass, 0),
     tauCorr_("tauCorr",dimTime, metalDict_.get<scalar>("tauCorr")),
@@ -223,6 +224,13 @@ Foam::tmp<Foam::volScalarField> Foam::incompressibleGasMetalMixture::vapourPress
     return
         p0*exp(thermo_.metalM()*thermo_.Hvapour()/R
        *(1/thermo_.Tboiling() - 1/min(T(), Tcritical_)));
+}
+
+Foam::tmp<Foam::surfaceScalarField>  Foam::incompressibleGasMetalMixture::momentumRedistributor(volScalarField& rho) const {
+
+    Foam::tmp<Foam::surfaceScalarField> redistributor = 2.0*fvc::interpolate(rho/(rhoM_ + rho2_));
+
+    return momentumRedistribution_ ? redistributor : (redistributor*0.0 + 1.0);
 }
 
 

@@ -37,7 +37,7 @@ vertices
 );
 
 // Refinment settings
-d_h 10;
+d_h 20;
 
 // X axis four zones in increae of X
 d_h_x $d_h;

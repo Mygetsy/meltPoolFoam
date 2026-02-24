@@ -85,6 +85,9 @@ class incompressibleGasMetalMixture
             //- Flag to evaluate divergence of the velocity field
             const bool quasiIncompressible_;
 
+            //- Flag to turn on momentum redistribution
+            const bool momentumRedistribution_;
+
             //- Melting density change [kg/m^3]
             const scalar rhoJump_;
 
@@ -158,6 +161,8 @@ public:
 
             //- Return the vapour pressure [Pa]
             tmp<volScalarField> vapourPressure(const dimensionedScalar& p0) const;
+
+            tmp<surfaceScalarField> momentumRedistributor(volScalarField& rho) const;
 
             //- Return the metal density [kg/m^3]
             const volScalarField& rhoM() const

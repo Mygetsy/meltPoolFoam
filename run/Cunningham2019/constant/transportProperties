@@ -23,7 +23,8 @@ metal
     nu              11.4e-07;   // Wunderlich: nu = 11.4e-07, mu = 4.76e-3
     rho             4170;       // Mills Ti64 at 1650
 
-    quasiIncompressible true;
+    quasiIncompressible false;
+    momentumRedistribution true;
 
     rhoSolid        4170;
     betaLiquid         0;
